@@ -62,3 +62,7 @@ buck-out/
 
 # CocoaPods
 /ios/Pods/
+
+# Server Secrets
+server/.env
+server/MusicKitKey.p8
