@@ -1,9 +1,11 @@
 require('dotenv').config();
 const fs = require('fs');
 const express = require('express');
+const bodyParser = require('body-parser');
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
 const app = express();
+app.use(bodyParser.json());
 const port = 3000;
 
 const SPOTIFY_URL = 'https://api.spotify.com/v1/search';
@@ -17,13 +19,41 @@ let appleMusicToken = process.env.APPLEMUSIC_TOKEN;
 //  GENERAL
 //////////////
 
-const determineShareLinkProvider = link => {
-  // Spotify Share Link
-  if (link.includes('spotify')) {
-    parseSpotifyShareLink(link);
-    return;
-  }
+//////
+//  EXTRACT SEARCH TERMS
+//    Given a share link, queries the appropriate provider API to
+//    gather the search terms needed for Transposition.
+//////
+const extractSearchTerms = link => {
+  return new Promise(async (resolve, reject) => {
+    const provider = link.match(/\.(\w+)\./)[1];
+
+    switch (provider) {
+      // https://open.spotify.com/{type}/{id}
+      case 'spotify':
+        const {
+          groups: {type, id},
+        } = link.match(/https:\/\/open.spotify.com\/(?<type>\w+)\/(?<id>\w+)/);
+        const trackInfo = await spotifyGetTrackInfo(`${type}s`, id);
+        // feed into search
+        resolve(trackInfo);
+        break;
+      case 'apple':
+        break;
+      default:
+        console.log('unsupported');
+    }
+  });
 };
+
+//////
+//  GENERATE TRANSPOSE LINK
+//    Generates a Transpose link that opens the Transpose app on the receiver's
+//    device and gets the right link for the receiver's set provider.
+//////
+app.get('/transpose/link', function(req, res) {
+  res.send(200);
+});
 
 ////////////////////////
 //  SPOTIFY
@@ -53,6 +83,7 @@ app.get('/spotify/generateToken', function(req, res) {
   })
     .then(function(response) {
       spotifyToken = response.data.access_token;
+      console.log(spotifyToken);
       res.sendStatus(200);
     })
     .catch(function(error) {
@@ -61,19 +92,43 @@ app.get('/spotify/generateToken', function(req, res) {
 });
 
 //////
-//  PARSE SPOTIFY SHARE LINK
-//    Extracts share type and id from a Spotify share link.
-//
-//    https://open.spotify.com/{type}/{id}
-//    type: track | artist | album | playlist
-//    id: base-62 identifier
+//  GENERATE SPOTIFY LINK
+//    Generates a Spotify link from a shared link.
 //////
-const parseSpotifyShareLink = link => {
-  const {
-    groups: {type, id},
-  } = link.match(/https:\/\/open.spotify.com\/(?<type>\w+)\/(?<id>\w+)/);
+app.post(
+  '/spotify/link',
+  runAsyncWrapper(async (req, res) => {
+    if (!req.body.link) {
+      res.sendStatus(400);
+    }
 
-  console.log(type, id);
+    const terms = await extractSearchTerms(req.body.link);
+    res.send(terms);
+    //res.sendStatus(200);
+  }),
+);
+
+//////
+//  GET SPOTIFY TRACK INFO
+//    Gets the track info for a Spotify track by ID.
+//
+//    https://api.spotify.com/v1/tracks/{id}
+//
+//    https://developer.spotify.com/documentation/web-api/reference/tracks/get-track/
+//////
+const spotifyGetTrackInfo = (type, id) => {
+  return axios
+    .get(`https://api.spotify.com/v1/${type}/${id}`, {
+      headers: {Authorization: `Bearer ${spotifyToken}`},
+    })
+    .then(response => {
+      const artist = response.data.artists[0].name;
+      const title = response.data.name;
+      return `${artist} ${title}`;
+    })
+    .catch(error => {
+      return error;
+    });
 };
 
 //////
@@ -159,3 +214,15 @@ app.get('/applemusic/search', function(req, res) {
 });
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+
+//////
+//  RUN ASYNC WRAPPER
+//    Async wrapper to catch errors without try/catch
+//
+//    https://zellwk.com/blog/async-await-express/
+//////
+function runAsyncWrapper(callback) {
+  return function(req, res, next) {
+    callback(req, res, next).catch(next);
+  };
+}
