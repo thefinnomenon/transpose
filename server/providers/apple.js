@@ -103,11 +103,17 @@ export default class Apple {
         //const { results } = response.data.results;
         switch (type) {
           case 'song':
-            const song = response.data.results.songs.data;
+            const songs = response.data.results.songs.data;
             //debug('Response: \n%O', song);
-            const link = song[0].attributes.url;
-            debug('Link: %o', link);
-            return link;
+            const songLink = songs[0].attributes.url;
+            debug('Link: %o', songLink);
+            return songLink;
+          case 'artist':
+            const artists = response.data.results.artists.data;
+            //debug('Response: \n%O', artists);
+            const artistLink = artists[0].attributes.url;
+            debug('Link: %o', artistLink);
+            return artistLink;
           case 'default':
             throw new Error('Type not implemented yet');
         }
@@ -117,11 +123,6 @@ export default class Apple {
         throw new Error('Search Failed');
       });
   }
-
-  //////  GENERATE LINK
-  //  Generates share link
-  //////
-  generateLink() {}
 
   //////
   //  UTILITIES

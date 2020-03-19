@@ -63,11 +63,16 @@ export default class Spotify {
       .then(response => {
         switch (type) {
           case 'track':
-            const artist = response.data.artists[0].name;
-            const title = response.data.name;
-            const elementData = { artist, title };
-            debug('Element Data: %O', elementData);
-            return elementData;
+            const trackData = {
+              artist: response.data.artists[0].name,
+              title: response.data.name,
+            };
+            debug('Element Data: %O', trackData);
+            return trackData;
+          case 'artist':
+            const artistData = { artist: response.data.name };
+            debug('Element Data: %O', artistData);
+            return artistData;
           case 'default':
             throw new Error('Type not implemented yet');
         }

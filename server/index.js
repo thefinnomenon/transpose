@@ -30,8 +30,15 @@ app.get(
 //////  CONVERT LINK
 //  Processes link and converts to other provider(s)
 //  Example Links
-//    https://open.spotify.com/track/2TpZlmChocrfeL5J6ed70t?si=1JWq_So9TM6XR2TmEsr_KA
-//    https://music.apple.com/us/album/kingdom-come/1440881327?i=1440881974
+//    Song
+//      https://open.spotify.com/track/2TpZlmChocrfeL5J6ed70t?si=1JWq_So9TM6XR2TmEsr_KA
+//      https://music.apple.com/us/album/kingdom-come/1440881327?i=1440881974
+//    Artist
+//      https://open.spotify.com/artist/50JJSqHUf2RQ9xsHs0KMHg?si=jceTIi5yRVWkOE6mm58-Yw
+//      https://music.apple.com/us/artist/jon-bellion/659289673
+//    Album
+//      https://open.spotify.com/album/0Qfwzu4yfzVUIrBLittdDO?si=7-GMsIKJQayMoTTlaJ4aGQ
+//      https://music.apple.com/us/album/the-separation/1440881327
 //////
 app.post(
   '/convert',
