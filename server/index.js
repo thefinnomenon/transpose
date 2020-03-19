@@ -39,6 +39,8 @@ app.get(
 //    Album
 //      https://open.spotify.com/album/0Qfwzu4yfzVUIrBLittdDO?si=7-GMsIKJQayMoTTlaJ4aGQ
 //      https://music.apple.com/us/album/the-separation/1440881327
+//    Playlist
+//      https://open.spotify.com/playlist/37i9dQZF1DZ06evO2WuK7C?si=7u10J4uvQMOZmIfScbKDnQ
 //////
 app.post(
   '/convert',

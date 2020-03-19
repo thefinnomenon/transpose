@@ -88,7 +88,7 @@ export default class Apple {
             const albumData = { album: album.name };
             debug('Element Data: %O', albumData);
             return albumData;
-          case 'default':
+          default:
             throw new Error('Type not implemented yet');
         }
       })
@@ -135,7 +135,7 @@ export default class Apple {
             const albumLink = albums[0].attributes.url;
             debug('Link: %o', albumLink);
             return albumLink;
-          case 'default':
+          default:
             throw new Error('Type not implemented yet');
         }
       })

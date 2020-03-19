@@ -77,7 +77,7 @@ export default class Spotify {
             const albumData = { album: response.data.name };
             debug('Element Data: %O', albumData);
             return albumData;
-          case 'default':
+          default:
             throw new Error('Type not implemented yet');
         }
       })
@@ -128,7 +128,7 @@ export default class Spotify {
             const albumLink = albums[0].external_urls.spotify;
             debug('Search Successful: %o', albumLink);
             return albumLink;
-          case 'default':
+          default:
             throw new Error('Type not implemented yet');
         }
       })
