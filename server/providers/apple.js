@@ -33,19 +33,24 @@ export default class Apple {
   ////// EXTRACT ELEMENT INFO
   //  Parses @link to extract element type and id.
   //  https://music.apple.com/{loc}/{type}/{title}/{album-id}?i={song-id}
+  //                             only exists for song links -^-----------^
   //////
   extractElementInfo(link) {
     const { groups } = link.match(
-      /https:\/\/music\.apple\.com\/(?<storefront>\w+)\/(?<type>\w+)\/(?<title>[a-zA-Z0-9\-]+)\/(?<albumID>\d+)\?i\=(?<songID>\d+)/,
+      /https:\/\/music\.apple\.com\/(?<storefront>\w+)\/(?<type>\w+)\/(?<title>[a-zA-Z0-9\-]+)\/(?<id>\d+)(\?i\=)?(?<songID>\d+)?/,
     );
 
-    let elementInfo = { type: null, id: null };
+    // If songID exists then it is a song. We have to use this check instead of
+    // the type because, for some reason, Apple links the song under the album type
+    // and adds a song identifier as a parameter.
+    const type = groups.songID ? 'song' : groups.type;
+    const id = type === 'song' ? groups.songID : groups.id;
 
-    if (groups.songID) {
-      elementInfo.storefront = groups.storefront;
-      elementInfo.type = 'song';
-      elementInfo.id = groups.songID;
-    }
+    const elementInfo = {
+      storefront: groups.storefront,
+      type,
+      id,
+    };
 
     debug('Element Info: %o', elementInfo);
     return elementInfo;
