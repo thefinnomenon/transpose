@@ -73,11 +73,21 @@ export default class Apple {
           case 'song':
             const song = response.data.data[0].attributes;
             //debug('Response: \n%O', song);
-            const artist = song.artistName;
-            const title = song.name;
-            const elementData = { artist, title };
-            debug('Element Data: %O', elementData);
-            return elementData;
+            const songData = { artist: song.artistName, title: song.name };
+            debug('Element Data: %O', songData);
+            return songData;
+          case 'artist':
+            const artist = response.data.data[0].attributes;
+            //debug('Response: \n%O', artist);
+            const artistData = { artist: artist.name };
+            debug('Element Data: %O', artistData);
+            return artistData;
+          case 'album':
+            const album = response.data.data[0].attributes;
+            //debug('Response: \n%O', album);
+            const albumData = { album: album.name };
+            debug('Element Data: %O', albumData);
+            return albumData;
           case 'default':
             throw new Error('Type not implemented yet');
         }
@@ -119,6 +129,12 @@ export default class Apple {
             const artistLink = artists[0].attributes.url;
             debug('Link: %o', artistLink);
             return artistLink;
+          case 'album':
+            const albums = response.data.results.albums.data;
+            //debug('Response: \n%O', albums);
+            const albumLink = albums[0].attributes.url;
+            debug('Link: %o', albumLink);
+            return albumLink;
           case 'default':
             throw new Error('Type not implemented yet');
         }

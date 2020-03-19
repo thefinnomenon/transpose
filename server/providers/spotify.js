@@ -73,6 +73,10 @@ export default class Spotify {
             const artistData = { artist: response.data.name };
             debug('Element Data: %O', artistData);
             return artistData;
+          case 'album':
+            const albumData = { album: response.data.name };
+            debug('Element Data: %O', albumData);
+            return albumData;
           case 'default':
             throw new Error('Type not implemented yet');
         }
@@ -110,10 +114,20 @@ export default class Spotify {
         debug('Search Successful: \n%O', response.data);
         switch (type) {
           case 'track':
-            const { items } = response.data.tracks;
-            const link = items[0].external_urls.spotify;
-            debug('Search Successful: %o', link);
-            return link;
+            const tracks = response.data.tracks.items;
+            const trackLink = tracks[0].external_urls.spotify;
+            debug('Search Successful: %o', trackLink);
+            return trackLink;
+          case 'artist':
+            const artists = response.data.artists.items;
+            const artistLink = artists[0].external_urls.spotify;
+            debug('Search Successful: %o', artistLink);
+            return artistLink;
+          case 'album':
+            const albums = response.data.albums.items;
+            const albumLink = albums[0].external_urls.spotify;
+            debug('Search Successful: %o', albumLink);
+            return albumLink;
           case 'default':
             throw new Error('Type not implemented yet');
         }
