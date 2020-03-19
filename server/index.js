@@ -62,7 +62,28 @@ app.post(
 
     const elementInfo = srcProvider.extractElementInfo(link);
     const elementData = await srcProvider.getElementData(elementInfo);
-    const transposedLink = await destProvider.search(elementInfo, elementData);
+
+    let transposedLink = '';
+    let links = [];
+    if (elementInfo.type === 'playlist') {
+      // Search each track in the playlist in parallel and store their
+      // converted link as well as their index in the original playlist
+      await Promise.all(
+        elementData.tracks.map(async (track, index) =>
+          links.push({
+            index,
+            link: await destProvider.search({ type: 'track' }, track),
+          }),
+        ),
+      );
+      // Sort track links back into original order
+      links.sort((linkA, linkB) => {
+        return linkA.index - linkB.index;
+      });
+      debug('Response: %O', links);
+    } else {
+      transposedLink = await destProvider.search(elementInfo, elementData);
+    }
 
     res.send(transposedLink);
   }),

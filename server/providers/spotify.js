@@ -77,6 +77,18 @@ export default class Spotify {
             const albumData = { album: response.data.name };
             debug('Element Data: %O', albumData);
             return albumData;
+          case 'playlist':
+            const playlistTracksData = response.data.tracks.items;
+            const playlistTracks = playlistTracksData.map(data => ({
+              artist: data.track.artists[0].name,
+              title: data.track.name,
+            }));
+            const playlistData = {
+              name: response.data.name,
+              tracks: playlistTracks,
+            };
+            debug('Element Data: %O', playlistData);
+            return playlistData;
           default:
             throw new Error('Type not implemented yet');
         }
