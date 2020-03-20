@@ -1,6 +1,7 @@
 require('dotenv').config();
 const debug = require('debug')('transpose-spotify');
 import axios from 'axios';
+import { stripExtraTitleInfo } from './utilities';
 
 export default class Spotify {
   token = process.env.SPOTIFY_TOKEN;
@@ -104,15 +105,15 @@ export default class Spotify {
   //  https://developer.spotify.com/documentation/web-api/reference/search/search/
   //////
   search({ type }, query, limit = 1) {
-    // Spotify uses the term track for song
     type = type === 'song' ? 'track' : type;
+    const q = this._formatQueryString(query);
 
     return axios
       .get(this.searchUrl, {
         headers: { Authorization: `Bearer ${this.token}` },
         params: {
-          q: this._formatQueryString(query),
-          type: type,
+          q,
+          type,
           limit,
         },
         paramsSerializer: params => {
@@ -122,11 +123,22 @@ export default class Spotify {
             .join('&');
         },
       })
-      .then(function(response) {
-        debug('Search Successful: \n%O', response.data);
+      .then(async response => {
         switch (type) {
           case 'track':
             const tracks = response.data.tracks.items;
+            // If search didn't resolve to a track check if title includes
+            // additional info (e.g. ft., live, remix, etc.) and re-query
+            // without this info
+            if (!tracks[0]) {
+              debug('Search resulted in 0 tracks with query: %s', query);
+              const cleanTitle = stripExtraTitleInfo(query.title);
+              if (cleanTitle) {
+                debug('Requerying...');
+                query.title = cleanTitle;
+                return await this.search({ type }, query, limit);
+              }
+            }
             const trackLink = tracks[0].external_urls.spotify;
             debug('Search Successful: %o', trackLink);
             return trackLink;
@@ -146,6 +158,7 @@ export default class Spotify {
       })
       .catch(function(error) {
         debug('Search Failed: \n%O', error);
+        debug('> Query: %s', q);
         return error.data;
       });
   }

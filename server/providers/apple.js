@@ -3,6 +3,7 @@ const debug = require('debug')('transpose-apple');
 import fs from 'fs';
 import axios from 'axios';
 import * as jwt from 'jsonwebtoken';
+import { stripExtraTitleInfo } from './utilities';
 
 export default class Apple {
   token = process.env.APPLEMUSIC_TOKEN;
@@ -32,12 +33,12 @@ export default class Apple {
 
   ////// EXTRACT ELEMENT INFO
   //  Parses @link to extract element type and id.
-  //  https://music.apple.com/{loc}/{type}/{title}/{album-id}?i={song-id}
-  //                             only exists for song links -^-----------^
+  //  https://music.apple.com/{loc}/{type}/{title}/{id}?i={song-id}
+  //                       only exists for song links -^-----------^
   //////
   extractElementInfo(link) {
     const { groups } = link.match(
-      /https:\/\/music\.apple\.com\/(?<storefront>\w+)\/(?<type>\w+)\/(?<title>[a-zA-Z0-9\-]+)\/(?<id>\d+)(\?i\=)?(?<songID>\d+)?/,
+      /https:\/\/music\.apple\.com\/(?<storefront>\w+)\/(?<type>\w+)\/(?<title>[a-zA-Z0-9\-]+)\/(?<id>[a-zA-Z0-9\-\.]+)(\?i\=)?(?<songID>\d+)?/,
     );
 
     // If songID exists then it is a song. We have to use this check instead of
@@ -72,22 +73,33 @@ export default class Apple {
         switch (type) {
           case 'song':
             const song = response.data.data[0].attributes;
-            //debug('Response: \n%O', song);
             const songData = { artist: song.artistName, title: song.name };
             debug('Element Data: %O', songData);
             return songData;
           case 'artist':
             const artist = response.data.data[0].attributes;
-            //debug('Response: \n%O', artist);
             const artistData = { artist: artist.name };
             debug('Element Data: %O', artistData);
             return artistData;
           case 'album':
             const album = response.data.data[0].attributes;
-            //debug('Response: \n%O', album);
             const albumData = { album: album.name };
             debug('Element Data: %O', albumData);
             return albumData;
+          case 'playlist':
+            const playlist = response.data.data[0];
+            debug('Response: \n%O', playlist);
+            const playlistTracksData = playlist.relationships.tracks.data;
+            const playlistTracks = playlistTracksData.map(data => ({
+              artist: data.attributes.artistName,
+              title: data.attributes.name,
+            }));
+            const playlistData = {
+              name: playlist.attributes.name,
+              tracks: playlistTracks,
+            };
+            debug('Element Data: %O', playlistData);
+            return playlistData;
           default:
             throw new Error('Type not implemented yet');
         }
@@ -104,34 +116,42 @@ export default class Apple {
   //////
   search({ type }, query, limit = 1) {
     type = type === 'track' ? 'song' : type;
+    const term = this._formatQueryString(query);
     return axios
       .get('https://api.music.apple.com/v1/catalog/us/search', {
         headers: { Authorization: `Bearer ${this.token}` },
         params: {
-          term: this._formatQueryString(query),
+          term,
           types: `${type}s`,
           limit: limit,
         },
       })
-      .then(response => {
-        //debug('Response: \n%O', response.data.results);
-        //const { results } = response.data.results;
+      .then(async response => {
         switch (type) {
           case 'song':
             const songs = response.data.results.songs.data;
-            //debug('Response: \n%O', song);
+            // If search didn't resolve to a song, check if title includes
+            // additional info (e.g. ft., live, remix, etc.) and re-query
+            // without this info
+            if (!songs[0]) {
+              debug('Search resulted in 0 tracks with query: %s', query);
+              const cleanTitle = stripExtraTitleInfo(query.title);
+              if (cleanTitle) {
+                debug('Requerying...');
+                query.title = cleanTitle;
+                return await this.search({ type }, query, limit);
+              }
+            }
             const songLink = songs[0].attributes.url;
             debug('Link: %o', songLink);
             return songLink;
           case 'artist':
             const artists = response.data.results.artists.data;
-            //debug('Response: \n%O', artists);
             const artistLink = artists[0].attributes.url;
             debug('Link: %o', artistLink);
             return artistLink;
           case 'album':
             const albums = response.data.results.albums.data;
-            //debug('Response: \n%O', albums);
             const albumLink = albums[0].attributes.url;
             debug('Link: %o', albumLink);
             return albumLink;
@@ -140,7 +160,8 @@ export default class Apple {
         }
       })
       .catch(error => {
-        debug('Search Failed', error);
+        debug('Search Failed: %O', error);
+        debug('> Query: %s', term);
         throw new Error('Search Failed');
       });
   }
