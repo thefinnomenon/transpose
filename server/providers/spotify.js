@@ -139,19 +139,19 @@ export default class Spotify {
                 return await this.search({ type }, query, limit);
               }
             }
-            const trackLink = tracks[0].external_urls.spotify;
-            debug('Search Successful: %o', trackLink);
-            return trackLink;
+            const trackInfo = this._getTrackInfo(tracks[0]);
+            debug('Search Successful: %o', trackInfo);
+            return trackInfo;
           case 'artist':
             const artists = response.data.artists.items;
-            const artistLink = artists[0].external_urls.spotify;
-            debug('Search Successful: %o', artistLink);
-            return artistLink;
+            const artistInfo = this._getArtistInfo(artists[0]);
+            debug('Search Successful: %o', artistInfo);
+            return artistInfo;
           case 'album':
             const albums = response.data.albums.items;
-            const albumLink = albums[0].external_urls.spotify;
-            debug('Search Successful: %o', albumLink);
-            return albumLink;
+            const albumInfo = this._getAlbumInfo(albums[0]);
+            debug('Search Successful: %o', albumInfo);
+            return albumInfo;
           default:
             throw new Error('Type not implemented yet');
         }
@@ -191,27 +191,41 @@ export default class Spotify {
     return q;
   }
 
-  //////  GET TRACK DETAILS
-  //  Extracts track details from get track response @data
+  //////  GET TRACK Info
+  //  Extracts track info from get @track response
   //  https://developer.spotify.com/documentation/web-api/reference/tracks/get-track/
   //////
-  _getTrackDetails(data) {
-    return;
+  _getTrackInfo(track) {
+    const id = track.id;
+    const images = track.album.images;
+    const title = track.name;
+    const artist = track.artists[0].name;
+    const link = track.external_urls.spotify;
+    return { id, images, title, artist, link };
   }
 
   //////  GET ARTIST DETAILS
-  //  Extracts artist details from get artist response @data
+  //  Extracts artist details from get @artist response
   //  https://developer.spotify.com/documentation/web-api/reference/artists/get-artist/
   //////
-  _getArtistDetails(data) {
-    return;
+  _getArtistInfo(artist) {
+    const id = artist.id;
+    const images = artist.images;
+    const title = artist.name;
+    const link = artist.external_urls.spotify;
+    return { id, images, title, link };
   }
 
   //////  GET ALBUM DETAILS
-  //  Extracts album details from get album response @data
-  //  https://developer.spotify.com/documentation/web-api/reference/albums/get-artist/
+  //  Extracts album details from get @album response
+  //  https://developer.spotify.com/documentation/web-api/reference/albums/get-album/
   //////
-  _getAlbumDetails(data) {
-    return;
+  _getAlbumInfo(album) {
+    const id = album.id;
+    const images = album.images;
+    const title = album.name;
+    const artist = album.artists[0].name;
+    const link = album.external_urls.spotify;
+    return { id, images, title, artist, link };
   }
 }
