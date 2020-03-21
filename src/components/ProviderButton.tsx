@@ -1,5 +1,6 @@
 import React from 'react';
-import { StyleSheet, TouchableOpacity, Text } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Text } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 type Props = {
   title: string;
@@ -9,13 +10,19 @@ type Props = {
 const defaultProps = Object.freeze({});
 
 export const ProviderButton = ({ title, onPress }: Props) => (
-  <TouchableOpacity style={styles.container} onPress={() => onPress()}>
-    <Text style={styles.title}>{title}</Text>
-  </TouchableOpacity>
+  <View style={styles.container}>
+    <TouchableOpacity style={styles.shareButton} onPress={() => onPress()}>
+      <Icon name="ios-share" size={30} color="#fff" />
+    </TouchableOpacity>
+    <TouchableOpacity style={styles.openButton} onPress={() => onPress()}>
+      <Text style={styles.title}>{title}</Text>
+    </TouchableOpacity>
+  </View>
 );
 
 const styles = StyleSheet.create({
   container: {
+    flexDirection: 'row',
     width: '90%',
     aspectRatio: 4.8,
     backgroundColor: '#808080',
@@ -28,7 +35,19 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 2,
     borderRadius: 10,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  shareButton: {
+    flex: 2,
+    borderRightWidth: 3,
+    borderColor: 'white',
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  openButton: {
+    flex: 7,
   },
   title: {
     textAlign: 'center',

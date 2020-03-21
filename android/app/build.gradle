@@ -191,6 +191,14 @@ dependencies {
     }
 }
 
+// react-native-vector-icons
+// https://github.com/oblador/react-native-vector-icons
+project.ext.vectoricons = [
+    iconFontNames: [ 'Ionicons.ttf' ]
+]
+
+apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
+
 // Run this once to be able to run the application with BUCK
 // puts all compile dependencies into folder libs for BUCK to use
 task copyDownloadableDepsToLibs(type: Copy) {

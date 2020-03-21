@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Debug from 'debug';
 Debug.enable('*');
-const debug = Debug('Test');
+const debug = Debug('transpose-main');
 import Axios from 'axios';
 import {
   StatusBar,
@@ -9,11 +9,10 @@ import {
   StyleSheet,
   View,
   TextInput,
-  Text,
-  TouchableOpacity,
   ActivityIndicator,
   Linking,
 } from 'react-native';
+import { determineProviderFromLink } from './src/utlities';
 import ElementDisplay from './src/components/ElementDisplay';
 import ProviderButton from './src/components/ProviderButton';
 
@@ -29,12 +28,31 @@ const axios = Axios.create({
   baseURL,
 });
 
+const providers: { [key: string]: { name: string; icon: string } } = {
+  spotify: {
+    name: 'Spotify',
+    icon: '',
+  },
+  apple: {
+    name: 'Apple Music',
+    icon: '',
+  },
+};
+
 const App = () => {
   const [link, setLink] = useState('');
-  const [state, setState] = useState(State.DONE);
+  const [state, setState] = useState(State.WAITING);
+  const [elementInfo, setElementInfo] = useState({
+    imageUrl: '',
+    title: '',
+    subtitle: '',
+  });
   const [transposedLinks, setTransposedLinks] = useState<{
     [key: string]: string;
-  }>({});
+  }>({
+    spotify:
+      'https://open.spotify.com/track/2TpZlmChocrfeL5J6ed70t?si=1JWq_So9TM6XR2TmEsr_KA',
+  });
 
   const transpose = (link: string) => {
     const provider = determineProviderFromLink(link);
@@ -83,7 +101,11 @@ const App = () => {
         <View style={styles.container}>
           <View style={styles.topContent}>
             {state === State.DONE && (
-              <ElementDisplay title="Kingdom Come" subtitle="Jon Bellion" />
+              <ElementDisplay
+                imageUrl={elementInfo.imageUrl}
+                title={elementInfo.title}
+                subtitle={elementInfo.subtitle}
+              />
             )}
             {state === State.WAITING && (
               <TextInput
@@ -102,10 +124,13 @@ const App = () => {
             )}
           </View>
           <View style={styles.buttons}>
-            <ProviderButton
-              title="Spotify"
-              onPress={() => console.log('Spotify Link')}
-            />
+            {Object.keys(providers).map(providerID => (
+              <ProviderButton
+                key={providerID}
+                title={providers[providerID].name}
+                onPress={() => console.log(transposedLinks[providerID])}
+              />
+            ))}
           </View>
         </View>
       </SafeAreaView>
@@ -124,36 +149,6 @@ const openLink = (link: string) => {
     })
     .catch(err => console.error('An error occurred', err));
 };
-
-const determineProviderFromLink = (link: string) => {
-  let providerId = '';
-  const provider = link.match(/\.(\w+)\./);
-
-  if (!provider) {
-    return null;
-  }
-
-  switch (provider[1]) {
-    case 'spotify':
-      providerId = 'spotify';
-      break;
-    case 'apple':
-      providerId = 'apple';
-      break;
-    default:
-      debug('Unsupported Provider');
-      return null;
-  }
-
-  debug('Provider: %o', providerId);
-  return providerId;
-};
-
-const Button = ({ title, onPress }) => (
-  <TouchableOpacity style={styles.button} onPress={() => onPress()}>
-    <Text style={styles.buttonTitle}>{title}</Text>
-  </TouchableOpacity>
-);
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -182,20 +177,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
     width: '80%',
-  },
-  button: {
-    alignContent: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'black',
-    borderRadius: 10,
-    width: '80%',
-    height: 40,
-    margin: 20,
-  },
-  buttonTitle: {
-    textAlign: 'center',
-    fontSize: 20,
-    color: 'white',
   },
 });
 
