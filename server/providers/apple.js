@@ -142,19 +142,16 @@ export default class Apple {
                 return await this.search({ type }, query, limit);
               }
             }
-            const songLink = songs[0].attributes.url;
-            debug('Link: %o', songLink);
-            return songLink;
+            const songInfo = this._getSongInfo(songs[0]);
+            return songInfo;
           case 'artist':
             const artists = response.data.results.artists.data;
-            const artistLink = artists[0].attributes.url;
-            debug('Link: %o', artistLink);
-            return artistLink;
+            const artistInfo = await this._getArtistInfo(artists[0]);
+            return artistInfo;
           case 'album':
             const albums = response.data.results.albums.data;
-            const albumLink = albums[0].attributes.url;
-            debug('Link: %o', albumLink);
-            return albumLink;
+            const albumInfo = this._getAlbumInfo(albums[0]);
+            return albumInfo;
           default:
             throw new Error('Type not implemented yet');
         }
@@ -183,27 +180,92 @@ export default class Apple {
     return q;
   }
 
-  //////  GET TRACK DETAILS
-  //  Extracts track details from get track response @data
-  //  https://developer.spotify.com/documentation/web-api/reference/tracks/get-track/
+  //////  GET SONG DETAILS
+  //  Extracts song details from get @song response
+  //  https://developer.apple.com/documentation/applemusicapi/get_a_catalog_song
   //////
-  _getTrackDetails(data) {
-    return;
+  _getSongInfo(song) {
+    const id = song.id;
+    const images = this._generateImagesArray(song.attributes.artwork.url);
+    const title = song.attributes.name;
+    const artist = song.attributes.artistName;
+    const link = song.attributes.url;
+    const songInfo = { id, images, title, artist, link };
+    debug('Get Song Details: %o', songInfo);
+    return songInfo;
   }
 
   //////  GET ARTIST DETAILS
-  //  Extracts artist details from get artist response @data
-  //  https://developer.spotify.com/documentation/web-api/reference/artists/get-artist/
+  //  Extracts artist details from get @artist response
+  //  https://developer.apple.com/documentation/applemusicapi/get_a_catalog_artist
   //////
-  _getArtistDetails(data) {
-    return;
+  async _getArtistInfo(artist) {
+    const id = artist.id;
+    const title = artist.attributes.name;
+    const link = artist.attributes.url;
+    const imageUrl = await this._getArtistImage(link);
+    const images = this._generateImagesArray(imageUrl);
+    const artistInfo = { id, images, title, link };
+    debug('Get artist Details: %o', artistInfo);
+    return artistInfo;
   }
 
   //////  GET ALBUM DETAILS
-  //  Extracts album details from get album response @data
-  //  https://developer.spotify.com/documentation/web-api/reference/albums/get-artist/
+  //  Extracts album details from get @album response
+  //  https://developer.apple.com/documentation/applemusicapi/get_a_catalog_album
   //////
-  _getAlbumDetails(data) {
-    return;
+  _getAlbumInfo(album) {
+    const id = album.id;
+    const images = this._generateImagesArray(album.attributes.artwork.url);
+    const title = album.attributes.name;
+    const artist = album.attributes.artistName;
+    const link = album.attributes.url;
+    const albumInfo = { id, images, title, artist, link };
+    debug('Get album Details: %o', albumInfo);
+    return albumInfo;
+  }
+
+  //////  GET ARTIST IMAGE
+  //  Apple doesn't include the artist image in the API response for some reason so instead,
+  //  we can load the artist's page and grab the image from there. Not pretty but it works ;)
+  //  https://gist.github.com/karlding/954388cb6cd2665d4f3a
+  //////
+  _getArtistImage(artistUrl) {
+    return axios
+      .get(artistUrl)
+      .then(response => {
+        const html = response.data;
+        const ogImage = html.match(
+          /<meta property=\"og:image\" content=\"(.*png)\"/,
+        )[1];
+        return ogImage.replace(/[\d]+x[\d]+/, '{w}x{h}');
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  }
+
+  //////  GENERATE IMAGES ARRAY
+  //  Uses the Apple Music image generation link to make an array of images with the
+  //  same sizes provided by Spotify (640x640, 300x300, 64x64).
+  //////
+  _generateImagesArray(imageUrl) {
+    return [
+      {
+        height: 640,
+        width: 640,
+        url: imageUrl.replace(/{(.*?)}x{(.*?)}/, '640x640'),
+      },
+      {
+        height: 300,
+        width: 300,
+        url: imageUrl.replace(/{(.*?)}x{(.*?)}/, '300x300'),
+      },
+      {
+        height: 64,
+        width: 64,
+        url: imageUrl.replace(/{(.*?)}x{(.*?)}/, '64x64'),
+      },
+    ];
   }
 }
