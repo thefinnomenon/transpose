@@ -1,117 +1,201 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * Generated with the TypeScript template
- * https://github.com/react-native-community/react-native-template-typescript
- *
- * @format
- */
-
-import React from 'react';
+import React, { useState } from 'react';
+import Debug from 'debug';
+Debug.enable('*');
+const debug = Debug('Test');
+import Axios from 'axios';
 import {
+  StatusBar,
   SafeAreaView,
   StyleSheet,
-  ScrollView,
   View,
+  TextInput,
   Text,
-  StatusBar,
+  TouchableOpacity,
+  ActivityIndicator,
+  Linking,
 } from 'react-native';
+import ElementDisplay from './src/components/ElementDisplay';
+import ProviderButton from './src/components/ProviderButton';
 
-import {
-  Header,
-  LearnMoreLinks,
-  Colors,
-  DebugInstructions,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+const baseURL = 'http://f1cf0b07.ngrok.io';
 
-declare var global: {HermesInternal: null | {}};
+enum State {
+  WAITING,
+  LOADING,
+  DONE,
+}
+
+const axios = Axios.create({
+  baseURL,
+});
 
 const App = () => {
+  const [link, setLink] = useState('');
+  const [state, setState] = useState(State.DONE);
+  const [transposedLinks, setTransposedLinks] = useState<{
+    [key: string]: string;
+  }>({});
+
+  const transpose = (link: string) => {
+    const provider = determineProviderFromLink(link);
+
+    if (!provider) {
+      return;
+    }
+
+    let destProvider = '';
+
+    if (provider === 'spotify') {
+      destProvider = 'apple';
+    } else {
+      destProvider = 'spotify';
+    }
+
+    debug('Transposing link from %o to %o: \n%o', provider, destProvider, link);
+    setState(State.LOADING);
+
+    axios
+      .post('/convert', {
+        link,
+        destProviderID: destProvider,
+      })
+      .then(function(response) {
+        debug('Transpose Success: %o', response.data);
+        const transposedLink = response.data;
+        setTransposedLinks({
+          ...transposedLinks,
+          [destProvider]: transposedLink,
+        });
+        setLink('');
+        setState(State.DONE);
+        openLink(response.data);
+      })
+      .catch(function(error) {
+        debug('Transpose Error: %o', error);
+        setState(State.WAITING);
+      });
+  };
+
   return (
     <>
       <StatusBar barStyle="dark-content" />
-      <SafeAreaView>
-        <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          style={styles.scrollView}>
-          <Header />
-          {global.HermesInternal == null ? null : (
-            <View style={styles.engine}>
-              <Text style={styles.footer}>Engine: Hermes</Text>
-            </View>
-          )}
-          <View style={styles.body}>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Step One</Text>
-              <Text style={styles.sectionDescription}>
-                Edit <Text style={styles.highlight}>App.tsx</Text> to change
-                this screen and then come back to see your edits.
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>See Your Changes</Text>
-              <Text style={styles.sectionDescription}>
-                <ReloadInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Debug</Text>
-              <Text style={styles.sectionDescription}>
-                <DebugInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Learn More</Text>
-              <Text style={styles.sectionDescription}>
-                Read the docs to discover what to do next:
-              </Text>
-            </View>
-            <LearnMoreLinks />
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.container}>
+          <View style={styles.topContent}>
+            {state === State.DONE && (
+              <ElementDisplay title="Kingdom Come" subtitle="Jon Bellion" />
+            )}
+            {state === State.WAITING && (
+              <TextInput
+                style={styles.linkInput}
+                placeholder="Paste link here to be Transposed!"
+                placeholderTextColor="#808080"
+                onChangeText={text => {
+                  setLink(text);
+                  transpose(text);
+                }}
+                value={link}
+              />
+            )}
+            {state === State.LOADING && (
+              <ActivityIndicator size="large" color="#101010" />
+            )}
           </View>
-        </ScrollView>
+          <View style={styles.buttons}>
+            <ProviderButton
+              title="Spotify"
+              onPress={() => console.log('Spotify Link')}
+            />
+          </View>
+        </View>
       </SafeAreaView>
     </>
   );
 };
 
+const openLink = (link: string) => {
+  Linking.canOpenURL(link)
+    .then(supported => {
+      if (!supported) {
+        console.log("Can't handle url: " + link);
+      } else {
+        return Linking.openURL(link);
+      }
+    })
+    .catch(err => console.error('An error occurred', err));
+};
+
+const determineProviderFromLink = (link: string) => {
+  let providerId = '';
+  const provider = link.match(/\.(\w+)\./);
+
+  if (!provider) {
+    return null;
+  }
+
+  switch (provider[1]) {
+    case 'spotify':
+      providerId = 'spotify';
+      break;
+    case 'apple':
+      providerId = 'apple';
+      break;
+    default:
+      debug('Unsupported Provider');
+      return null;
+  }
+
+  debug('Provider: %o', providerId);
+  return providerId;
+};
+
+const Button = ({ title, onPress }) => (
+  <TouchableOpacity style={styles.button} onPress={() => onPress()}>
+    <Text style={styles.buttonTitle}>{title}</Text>
+  </TouchableOpacity>
+);
+
 const styles = StyleSheet.create({
-  scrollView: {
-    backgroundColor: Colors.lighter,
+  safeArea: {
+    flex: 1,
   },
-  engine: {
-    position: 'absolute',
-    right: 0,
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  body: {
-    backgroundColor: Colors.white,
+  topContent: {
+    flex: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: '15%',
   },
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  linkInput: {
+    height: 40,
+    width: '80%',
+    borderBottomColor: 'black',
+    borderBottomWidth: 1,
+    color: '#101010',
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: Colors.black,
+  buttons: {
+    flex: 1,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    width: '80%',
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-    color: Colors.dark,
+  button: {
+    alignContent: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'black',
+    borderRadius: 10,
+    width: '80%',
+    height: 40,
+    margin: 20,
   },
-  highlight: {
-    fontWeight: '700',
-  },
-  footer: {
-    color: Colors.dark,
-    fontSize: 12,
-    fontWeight: '600',
-    padding: 4,
-    paddingRight: 12,
-    textAlign: 'right',
+  buttonTitle: {
+    textAlign: 'center',
+    fontSize: 20,
+    color: 'white',
   },
 });
 
