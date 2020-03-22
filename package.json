@@ -45,5 +45,24 @@
       "json",
       "node"
     ]
+  },
+  "eslintConfig": {
+    "root": true,
+    "extends": "@react-native-community",
+    "parser": "@typescript-eslint/parser",
+    "plugins": [
+      "@typescript-eslint"
+    ]
+  },
+  "prettier": {
+    "bracketSpacing": true,
+    "jsxBracketSameLine": true,
+    "singleQuote": true,
+    "trailingComma": "all"
+  },
+  "babel": {
+    "presets": [
+      "module:metro-react-native-babel-preset"
+    ]
   }
 }

@@ -10,7 +10,6 @@ import {
   View,
   TextInput,
   ActivityIndicator,
-  Linking,
 } from 'react-native';
 import { determineProviderFromLink } from './src/utlities';
 import ElementDisplay from './src/components/ElementDisplay';
