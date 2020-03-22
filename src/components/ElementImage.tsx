@@ -1,15 +1,20 @@
 import React from 'react';
-import { StyleSheet, View, Image } from 'react-native';
+import { Dimensions, StyleSheet, View, Image } from 'react-native';
 
 type Props = {
+  type: string;
   uri: string;
 } & typeof defaultProps;
 
 const defaultProps = Object.freeze({});
 
-export const ElementImage = ({ uri }: Props) => (
+export const ElementImage = ({ type, uri }: Props) => (
   <View style={styles.shadow}>
-    <Image style={styles.image} source={{ uri }} />
+    <Image
+      style={type === 'artist' ? styles.circleImage : styles.squareImage}
+      source={{ uri }}
+      resizeMode="stretch"
+    />
   </View>
 );
 
@@ -24,10 +29,15 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 5,
   },
-  image: {
+  squareImage: {
     width: '80%',
     aspectRatio: 1,
     borderRadius: 10,
+  },
+  circleImage: {
+    width: '80%',
+    aspectRatio: 1,
+    borderRadius: Math.round(Dimensions.get('window').width / 2),
   },
 });
 

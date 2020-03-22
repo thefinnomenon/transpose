@@ -40,19 +40,18 @@ const providers: { [key: string]: { name: string; icon: string } } = {
 };
 
 const App = () => {
-  const [link, setLink] = useState('');
+  const [inputText, setInputText] = useState('');
   const [state, setState] = useState(State.WAITING);
   const [elementInfo, setElementInfo] = useState({
+    id: '',
+    type: '',
     imageUrl: '',
     title: '',
     subtitle: '',
   });
   const [transposedLinks, setTransposedLinks] = useState<{
     [key: string]: string;
-  }>({
-    spotify:
-      'https://open.spotify.com/track/2TpZlmChocrfeL5J6ed70t?si=1JWq_So9TM6XR2TmEsr_KA',
-  });
+  }>({});
 
   const transpose = (link: string) => {
     const provider = determineProviderFromLink(link);
@@ -79,14 +78,21 @@ const App = () => {
       })
       .then(function(response) {
         debug('Transpose Success: %o', response.data);
-        const transposedLink = response.data;
+        const element = response.data;
+        setElementInfo({
+          id: element.id,
+          type: element.type,
+          imageUrl: element.images[0].url,
+          title: element.title,
+          subtitle: element.artist,
+        });
         setTransposedLinks({
           ...transposedLinks,
-          [destProvider]: transposedLink,
+          [destProvider]: element.link,
         });
-        setLink('');
+        setInputText('');
         setState(State.DONE);
-        openLink(response.data);
+        //openLink(response.data);
       })
       .catch(function(error) {
         debug('Transpose Error: %o', error);
@@ -102,6 +108,7 @@ const App = () => {
           <View style={styles.topContent}>
             {state === State.DONE && (
               <ElementDisplay
+                type={elementInfo.type}
                 imageUrl={elementInfo.imageUrl}
                 title={elementInfo.title}
                 subtitle={elementInfo.subtitle}
@@ -113,10 +120,10 @@ const App = () => {
                 placeholder="Paste link here to be Transposed!"
                 placeholderTextColor="#808080"
                 onChangeText={text => {
-                  setLink(text);
+                  setInputText(text);
                   transpose(text);
                 }}
-                value={link}
+                value={inputText}
               />
             )}
             {state === State.LOADING && (
@@ -128,7 +135,7 @@ const App = () => {
               <ProviderButton
                 key={providerID}
                 title={providers[providerID].name}
-                onPress={() => console.log(transposedLinks[providerID])}
+                link={transposedLinks[providerID]}
               />
             ))}
           </View>
@@ -136,18 +143,6 @@ const App = () => {
       </SafeAreaView>
     </>
   );
-};
-
-const openLink = (link: string) => {
-  Linking.canOpenURL(link)
-    .then(supported => {
-      if (!supported) {
-        console.log("Can't handle url: " + link);
-      } else {
-        return Linking.openURL(link);
-      }
-    })
-    .catch(err => console.error('An error occurred', err));
 };
 
 const styles = StyleSheet.create({

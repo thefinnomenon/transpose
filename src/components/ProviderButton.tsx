@@ -1,24 +1,53 @@
 import React from 'react';
-import { StyleSheet, View, TouchableOpacity, Text } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+import {
+  Platform,
+  StyleSheet,
+  View,
+  TouchableOpacity,
+  Text,
+  Linking,
+} from 'react-native';
+import Icon from 'react-native-vector-icons/EvilIcons';
 
 type Props = {
   title: string;
-  onPress: () => void;
+  link: string;
 } & typeof defaultProps;
 
 const defaultProps = Object.freeze({});
 
-export const ProviderButton = ({ title, onPress }: Props) => (
+export const ProviderButton = ({ title, link }: Props) => (
   <View style={styles.container}>
-    <TouchableOpacity style={styles.shareButton} onPress={() => onPress()}>
-      <Icon name="ios-share" size={30} color="#fff" />
+    <TouchableOpacity
+      style={styles.shareButton}
+      disabled={link == null}
+      onPress={() => console.log('Share link: %o', link)}>
+      <Icon
+        name={Platform.OS === 'ios' ? 'share-apple' : 'share-google'}
+        size={40}
+        color="#fff"
+      />
     </TouchableOpacity>
-    <TouchableOpacity style={styles.openButton} onPress={() => onPress()}>
+    <TouchableOpacity
+      style={styles.openButton}
+      disabled={link == null}
+      onPress={() => openLink(link)}>
       <Text style={styles.title}>{title}</Text>
     </TouchableOpacity>
   </View>
 );
+
+const openLink = (link: string) => {
+  Linking.canOpenURL(link)
+    .then(supported => {
+      if (!supported) {
+        console.log("Can't handle url: " + link);
+      } else {
+        return Linking.openURL(link);
+      }
+    })
+    .catch(err => console.error('An error occurred', err));
+};
 
 const styles = StyleSheet.create({
   container: {

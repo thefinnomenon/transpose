@@ -71,10 +71,12 @@ app.post(
           destProvider.search({ type: 'track' }, track),
         ),
       );
+      convertedPlaylistLinks.type = elementInfo.type;
       debug('Response: %O', convertedPlaylistLinks);
       res.send(convertedPlaylistLinks);
     } else {
       const convertedLink = await destProvider.search(elementInfo, elementData);
+      convertedLink.type = elementInfo.type;
       res.send(convertedLink);
     }
   }),
