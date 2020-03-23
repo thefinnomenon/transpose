@@ -96,15 +96,13 @@ app.get(
     await putTransposeRecord(transposeID, linkID, query, transposeResults);
     debug('Put Transpose record in DB');
 
-    // Construct Transpose link and add to result object
+    // Construct Transpose link, format response, and add link
     const transposeLink = `${TRANSPOSE_LINK_BASE}/${transposeID}`;
-    transposeResults.transpose = {
-      link: transposeLink,
-    };
+    const formattedResults = formatResults(transposeResults, transposeLink);
 
     debug('Transpose Complete: %o', transposeLink);
 
-    res.send(transposeResults);
+    res.send(formattedResults);
   }),
 );
 
@@ -213,6 +211,50 @@ const processLink = (provider, type, id) => {
     debug('Transpose Results: %O', transposeResults);
     resolve({ query, transposeResults });
   });
+};
+
+//////  FORMAT RESULTS
+//  Returns an object with
+//    - metadata: data from the first available provider (order of providers object)
+//    - links: provider:links mappings for the element
+//
+//  Result
+//  {
+//    metadata: {
+//      type: '',
+//      images: ['','',''],  // s, m, l
+//      title: '',
+//      artist: '',
+//      album: '',
+//    },
+//    links: {
+//      spotify: '',
+//      apple: '',
+//      transpose: '',
+//    }
+//  }
+//
+//////
+const formatResults = (results, transposeLink) => {
+  let metadata;
+  let links = {};
+  for (const provider of Object.keys(providers)) {
+    console.log(provider);
+    if (!metadata && results[provider]) {
+      const type = results[provider].type || '';
+      const images = results[provider].images || '';
+      const title = results[provider].title || '';
+      const artist = results[provider].artist || '';
+      const album = results[provider].album || '';
+      metadata = { type, images, title, artist, album };
+    }
+
+    links[provider] = results[provider].link;
+  }
+
+  links.transpose = transposeLink;
+
+  return { metadata, links };
 };
 
 //////  RUN ASYNC WRAPPER
