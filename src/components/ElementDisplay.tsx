@@ -2,22 +2,46 @@ import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import ElementImage from './ElementImage';
 
+export interface IMetadata {
+  type: 'track' | 'artist' | 'album';
+  images: string[];
+  track: string;
+  artist: string;
+  album: string;
+}
+
 type Props = {
-  type: string;
-  imageUrl: string;
-  title: string;
-  subtitle: string;
+  metadata: IMetadata;
 } & typeof defaultProps;
 
 const defaultProps = Object.freeze({});
 
-export const ComponentName = ({ type, imageUrl, title, subtitle }: Props) => (
-  <View style={styles.container}>
-    <ElementImage uri={imageUrl} type={type} />
-    <Text style={styles.title}>{title}</Text>
-    <Text style={styles.subtitle}>{subtitle}</Text>
-  </View>
-);
+export const ComponentName = ({ metadata }: Props) => {
+  const { type, images } = metadata;
+  let title,
+    subtitle = '';
+
+  switch (type) {
+    case 'track':
+      title = metadata.track;
+      subtitle = metadata.artist;
+      break;
+    case 'artist':
+      title = metadata.artist;
+      break;
+    case 'album':
+      title = metadata.album;
+      subtitle = metadata.artist;
+  }
+
+  return (
+    <View style={styles.container}>
+      <ElementImage uri={images[1]} type={type} />
+      <Text style={styles.title}>{title}</Text>
+      <Text style={styles.subtitle}>{subtitle}</Text>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {

@@ -16,7 +16,7 @@ import {
   extractAppleLinkInfo,
   extractSpotifyLinkInfo,
 } from './src/utlities';
-import ElementDisplay from './src/components/ElementDisplay';
+import ElementDisplay, { IMetadata } from './src/components/ElementDisplay';
 import ProviderButton from './src/components/ProviderButton';
 
 const baseURL = 'http://2c2312ab.ngrok.io';
@@ -49,9 +49,7 @@ const providers: {
 const App = () => {
   const [inputText, setInputText] = useState('');
   const [state, setState] = useState(State.WAITING);
-  const [elementInfo, setElementMetadata] = useState<{
-    [key: string]: string;
-  }>();
+  const [elementMetadata, setElementMetadata] = useState<IMetadata>();
   const [transposedLinks, setElementLinks] = useState<{
     [key: string]: string;
   }>({});
@@ -91,14 +89,7 @@ const App = () => {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.container}>
           <View style={styles.topContent}>
-            {elementInfo && (
-              <ElementDisplay
-                type={elementInfo.type}
-                imageUrl={elementInfo.imageUrl}
-                title={elementInfo.title}
-                subtitle={elementInfo.subtitle}
-              />
-            )}
+            {elementMetadata && <ElementDisplay metadata={elementMetadata} />}
             {state === State.WAITING && (
               <TextInput
                 style={styles.linkInput}
