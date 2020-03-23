@@ -108,6 +108,31 @@ app.get(
   }),
 );
 
+//////  RESOLVE TRANSPOSE LINK
+//  Retrieves info for Tranpose link with @id.
+//  GET https://transpose.com/:id
+//////
+app.get(
+  '/:id',
+  asyncWrapper(async (req, res) => {
+    if (!req.params.id) {
+      res.sendStatus(400);
+    }
+
+    const { id } = req.params;
+    debug('Resolving Transpose link with ID: %o', id);
+
+    const record = await getTransposeRecord(id);
+
+    if (!record.Item) {
+      res.sendStatus(404);
+      return;
+    }
+
+    res.send(record.Item.content);
+  }),
+);
+
 //////  QUERY DB FOR LINK RECORD
 //  Queries for @linkId record
 //////
@@ -147,6 +172,20 @@ const putTransposeRecord = (transposeID, linkID, query, transposeResults) => {
     .promise();
 };
 
+//////  GET TRANSPOSE RECORD FROM DB
+//  Get @transposeID record from DB.
+//////
+const getTransposeRecord = transposeID => {
+  return dynamoDB
+    .get({
+      TableName: TABLENAME,
+      Key: {
+        id: transposeID,
+      },
+    })
+    .promise();
+};
+
 //////  PROCESS LINK
 //  Get info for element and then search other providers
 //////
@@ -175,19 +214,6 @@ const processLink = (provider, type, id) => {
     resolve({ query, transposeResults });
   });
 };
-
-//////  RESOLVE TRANSPOSE LINK
-//  Retrieves info for Tranpose link with @id.
-//  GET https://transpose.com/:id
-//////
-app.get(
-  '/:id',
-  asyncWrapper(async (req, res) => {
-    if (!req.params.id) {
-      res.sendStatus(400);
-    }
-  }),
-);
 
 //////  RUN ASYNC WRAPPER
 //  Async wrapper to catch errors without try/catch
