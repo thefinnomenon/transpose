@@ -222,7 +222,7 @@ const processLink = (provider, type, id) => {
 //  {
 //    metadata: {
 //      type: '',
-//      images: ['','',''],  // s, m, l
+//      images: ['','',''],  // large, medium, small
 //      title: '',
 //      artist: '',
 //      album: '',

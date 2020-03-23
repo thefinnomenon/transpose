@@ -199,37 +199,45 @@ export default class Spotify {
   //  Extracts track info from get @track response
   //  https://developer.spotify.com/documentation/web-api/reference/tracks/get-track/
   //////
-  _getTrackInfo(track) {
-    const id = track.id;
-    const images = track.album.images;
-    const title = track.name;
-    const artist = track.artists[0].name;
-    const link = track.external_urls.spotify;
-    return { provider: this.provider, id, images, title, artist, link };
+  _getTrackInfo(t) {
+    const id = t.id;
+    const images = this._simplifyImageArray(t.album.images);
+    const track = t.name;
+    const artist = t.artists[0].name;
+    const link = t.external_urls.spotify;
+    return { provider: this.provider, id, images, track, artist, link };
   }
 
   //////  GET ARTIST DETAILS
   //  Extracts artist details from get @artist response
   //  https://developer.spotify.com/documentation/web-api/reference/artists/get-artist/
   //////
-  _getArtistInfo(artist) {
-    const id = artist.id;
-    const images = artist.images;
-    const title = artist.name;
-    const link = artist.external_urls.spotify;
-    return { provider: this.provider, id, images, title, link };
+  _getArtistInfo(a) {
+    const id = a.id;
+    const images = this._simplifyImageArray(a.images);
+    const artist = a.name;
+    const link = a.external_urls.spotify;
+    return { provider: this.provider, id, images, artist, link };
   }
 
   //////  GET ALBUM DETAILS
   //  Extracts album details from get @album response
   //  https://developer.spotify.com/documentation/web-api/reference/albums/get-album/
   //////
-  _getAlbumInfo(album) {
-    const id = album.id;
-    const images = album.images;
-    const title = album.name;
-    const artist = album.artists[0].name;
-    const link = album.external_urls.spotify;
-    return { provider: this.provider, id, images, title, artist, link };
+  _getAlbumInfo(a) {
+    const id = a.id;
+    const images = this._simplifyImageArray(a.images);
+    const album = a.name;
+    const artist = a.artists[0].name;
+    const link = a.external_urls.spotify;
+    return { provider: this.provider, id, images, album, artist, link };
+  }
+
+  //////  SIMPLIFY IMAGE ARRAY
+  //  Creates an array from @images with only the urls.
+  //  [large, medium, small]
+  //////
+  _simplifyImageArray(images) {
+    return images.map(image => image.url);
   }
 }

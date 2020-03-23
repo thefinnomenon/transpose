@@ -11,11 +11,15 @@ import {
   TextInput,
   ActivityIndicator,
 } from 'react-native';
-import { determineProviderFromLink } from './src/utlities';
+import {
+  determineProviderFromLink,
+  extractAppleLinkInfo,
+  extractSpotifyLinkInfo,
+} from './src/utlities';
 import ElementDisplay from './src/components/ElementDisplay';
 import ProviderButton from './src/components/ProviderButton';
 
-const baseURL = 'http://f1cf0b07.ngrok.io';
+const baseURL = 'http://2c2312ab.ngrok.io';
 
 enum State {
   WAITING,
@@ -27,73 +31,55 @@ const axios = Axios.create({
   baseURL,
 });
 
-const providers: { [key: string]: { name: string; icon: string } } = {
+const providers: {
+  [key: string]: { name: string; icon: string; extractLinkInfo: Function };
+} = {
   spotify: {
     name: 'Spotify',
     icon: '',
+    extractLinkInfo: extractSpotifyLinkInfo,
   },
   apple: {
     name: 'Apple Music',
     icon: '',
+    extractLinkInfo: extractAppleLinkInfo,
   },
 };
 
 const App = () => {
   const [inputText, setInputText] = useState('');
   const [state, setState] = useState(State.WAITING);
-  const [elementInfo, setElementInfo] = useState({
-    id: '',
-    type: '',
-    imageUrl: '',
-    title: '',
-    subtitle: '',
-  });
-  const [transposedLinks, setTransposedLinks] = useState<{
+  const [elementInfo, setElementMetadata] = useState<{
+    [key: string]: string;
+  }>();
+  const [transposedLinks, setElementLinks] = useState<{
     [key: string]: string;
   }>({});
 
   const transpose = (link: string) => {
     const provider = determineProviderFromLink(link);
-
     if (!provider) {
       return;
     }
 
-    let destProvider = '';
+    debug('Transposing link %o', link);
 
-    if (provider === 'spotify') {
-      destProvider = 'apple';
-    } else {
-      destProvider = 'spotify';
-    }
+    const { type, id } = providers[provider].extractLinkInfo(link);
 
-    debug('Transposing link from %o to %o: \n%o', provider, destProvider, link);
     setState(State.LOADING);
+    setInputText('');
 
     axios
-      .post('/convert', {
-        link,
-        destProviderID: destProvider,
-      })
-      .then(function(response) {
-        debug('Transpose Success: %o', response.data);
+      .get(`/transpose/${provider}/${type}/${id}`)
+      .then(response => {
         const element = response.data;
-        setElementInfo({
-          id: element.id,
-          type: element.type,
-          imageUrl: element.images[0].url,
-          title: element.title,
-          subtitle: element.artist,
-        });
-        setTransposedLinks({
-          ...transposedLinks,
-          [destProvider]: element.link,
-        });
-        setInputText('');
+        debug('Transpose Success: %o', element);
+        setElementMetadata(element.metadata);
+        setElementLinks(element.links);
         setState(State.DONE);
         //openLink(response.data);
       })
-      .catch(function(error) {
+      .catch(error => {
         debug('Transpose Error: %o', error);
         setState(State.WAITING);
       });
@@ -105,7 +91,7 @@ const App = () => {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.container}>
           <View style={styles.topContent}>
-            {state === State.DONE && (
+            {elementInfo && (
               <ElementDisplay
                 type={elementInfo.type}
                 imageUrl={elementInfo.imageUrl}

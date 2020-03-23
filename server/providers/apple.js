@@ -192,39 +192,39 @@ export default class Apple {
   //  Extracts track details from get @track response
   //  https://developer.apple.com/documentation/applemusicapi/get_a_catalog_song
   //////
-  _getTrackInfo(track) {
-    const id = track.id;
-    const images = this._generateImagesArray(track.attributes.artwork.url);
-    const title = track.attributes.name;
-    const artist = track.attributes.artistName;
-    const link = track.attributes.url;
-    return { provider: this.provider, id, images, title, artist, link };
+  _getTrackInfo(t) {
+    const id = t.id;
+    const images = this._generateImagesArray(t.attributes.artwork.url);
+    const track = t.attributes.name;
+    const artist = t.attributes.artistName;
+    const link = t.attributes.url;
+    return { provider: this.provider, id, images, track, artist, link };
   }
 
   //////  GET ARTIST DETAILS
   //  Extracts artist details from get @artist response
   //  https://developer.apple.com/documentation/applemusicapi/get_a_catalog_artist
   //////
-  async _getArtistInfo(artist) {
-    const id = artist.id;
-    const title = artist.attributes.name;
-    const link = artist.attributes.url;
+  async _getArtistInfo(a) {
+    const id = a.id;
+    const artist = a.attributes.name;
+    const link = a.attributes.url;
     const imageUrl = await this._getArtistImage(link);
     const images = this._generateImagesArray(imageUrl);
-    return { provider: this.provider, id, images, title, link };
+    return { provider: this.provider, id, images, artist, link };
   }
 
   //////  GET ALBUM DETAILS
   //  Extracts album details from get @album response
   //  https://developer.apple.com/documentation/applemusicapi/get_a_catalog_album
   //////
-  _getAlbumInfo(album) {
-    const id = album.id;
-    const images = this._generateImagesArray(album.attributes.artwork.url);
-    const title = album.attributes.name;
-    const artist = album.attributes.artistName;
-    const link = album.attributes.url;
-    return { provider: this.provider, id, images, title, artist, link };
+  _getAlbumInfo(a) {
+    const id = a.id;
+    const images = this._generateImagesArray(a.attributes.artwork.url);
+    const album = a.attributes.name;
+    const artist = a.attributes.artistName;
+    const link = a.attributes.url;
+    return { provider: this.provider, id, images, album, artist, link };
   }
 
   //////  GET ARTIST IMAGE
@@ -253,21 +253,9 @@ export default class Apple {
   //////
   _generateImagesArray(imageUrl) {
     return [
-      {
-        height: 640,
-        width: 640,
-        url: imageUrl.replace(/{(.*?)}x{(.*?)}/, '640x640'),
-      },
-      {
-        height: 300,
-        width: 300,
-        url: imageUrl.replace(/{(.*?)}x{(.*?)}/, '300x300'),
-      },
-      {
-        height: 64,
-        width: 64,
-        url: imageUrl.replace(/{(.*?)}x{(.*?)}/, '64x64'),
-      },
+      imageUrl.replace(/{(.*?)}x{(.*?)}/, '640x640'),
+      imageUrl.replace(/{(.*?)}x{(.*?)}/, '300x300'),
+      imageUrl.replace(/{(.*?)}x{(.*?)}/, '64x64'),
     ];
   }
 }
