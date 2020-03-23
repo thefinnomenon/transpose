@@ -217,7 +217,7 @@ export default class Spotify {
     const images = artist.images;
     const title = artist.name;
     const link = artist.external_urls.spotify;
-    return { provider: this.provider, images, title, link };
+    return { provider: this.provider, id, images, title, link };
   }
 
   //////  GET ALBUM DETAILS
