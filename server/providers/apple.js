@@ -9,6 +9,7 @@ export default class Apple {
   token = process.env.APPLEMUSIC_TOKEN;
   teamID = process.env.APPLEMUSIC_TEAMID;
   keyID = process.env.APPLEMUSIC_KEYID;
+  provider = 'apple';
   searchUrl = 'https://api.music.apple.com/v1/catalog/us/search';
   tokenUrl = 'https://accounts.spotify.com/api/token';
 
@@ -57,21 +58,23 @@ export default class Apple {
     return elementInfo;
   }
 
-  //////  GET ELEMENT DATA
-  //  Get element of @type with @id in @storefront and parse the response
-  //  https://api.music.apple.com/v1/catalog/{storefront}/{type}/{id}
+  //////  GET ELEMENT
+  //  Get element of @type with @id and parse the response
+  //  https://api.music.apple.com/v1/catalog/us/{type}/{id}
   //////
-  getElementData({ storefront, type, id }) {
+  getElement(type, id) {
     return axios
       .get(
-        `https://api.music.apple.com/v1/catalog/${storefront}/${type}s/${id}`,
+        `https://api.music.apple.com/v1/catalog/us/${
+          type === 'track' ? 'song' : type
+        }s/${id}`,
         {
           headers: { Authorization: `Bearer ${this.token}` },
         },
       )
       .then(response => {
         switch (type) {
-          case 'song':
+          case 'track':
             const song = response.data.data[0].attributes;
             const songData = { artist: song.artistName, title: song.name };
             debug('Element Data: %O', songData);
@@ -114,43 +117,48 @@ export default class Apple {
   //  Query for results of @type with @query & @limit
   //  https://developer.apple.com/documentation/applemusicapi/search_for_catalog_resources
   //////
-  search({ type }, query, limit = 1) {
-    type = type === 'track' ? 'song' : type;
+  search(type, query, limit = 1) {
     const term = this._formatQueryString(query);
     return axios
       .get('https://api.music.apple.com/v1/catalog/us/search', {
         headers: { Authorization: `Bearer ${this.token}` },
         params: {
           term,
-          types: `${type}s`,
+          types: `${type === 'track' ? 'song' : type}s`,
           limit: limit,
         },
       })
       .then(async response => {
         switch (type) {
-          case 'song':
-            const songs = response.data.results.songs.data;
+          case 'track':
+            const tracks = response.data.results.songs.data;
             // If search didn't resolve to a song, check if title includes
             // additional info (e.g. ft., live, remix, etc.) and re-query
             // without this info
-            if (!songs[0]) {
+            if (!tracks[0]) {
               debug('Search resulted in 0 tracks with query: %s', query);
               const cleanTitle = stripExtraTitleInfo(query.title);
               if (cleanTitle) {
                 debug('Requerying...');
                 query.title = cleanTitle;
-                return await this.search({ type }, query, limit);
+                return await this.search(type, query, limit);
               }
             }
-            const songInfo = this._getSongInfo(songs[0]);
-            return songInfo;
+            const trackInfo = this._getTrackInfo(tracks[0]);
+            trackInfo.type = type;
+            debug('Search Successful');
+            return trackInfo;
           case 'artist':
             const artists = response.data.results.artists.data;
             const artistInfo = await this._getArtistInfo(artists[0]);
+            artistInfo.type = type;
+            debug('Search Successful');
             return artistInfo;
           case 'album':
             const albums = response.data.results.albums.data;
             const albumInfo = this._getAlbumInfo(albums[0]);
+            albumInfo.type = type;
+            debug('Search Successful');
             return albumInfo;
           default:
             throw new Error('Type not implemented yet');
@@ -158,7 +166,7 @@ export default class Apple {
       })
       .catch(error => {
         debug('Search Failed: %O', error);
-        debug('> Query: %s', term);
+        debug('> Query: %s, %s', term, type);
         throw new Error('Search Failed');
       });
   }
@@ -180,19 +188,17 @@ export default class Apple {
     return q;
   }
 
-  //////  GET SONG DETAILS
-  //  Extracts song details from get @song response
+  //////  GET TRACK DETAILS
+  //  Extracts track details from get @track response
   //  https://developer.apple.com/documentation/applemusicapi/get_a_catalog_song
   //////
-  _getSongInfo(song) {
-    const id = song.id;
-    const images = this._generateImagesArray(song.attributes.artwork.url);
-    const title = song.attributes.name;
-    const artist = song.attributes.artistName;
-    const link = song.attributes.url;
-    const songInfo = { id, images, title, artist, link };
-    debug('Get Song Details: %o', songInfo);
-    return songInfo;
+  _getTrackInfo(track) {
+    const id = track.id;
+    const images = this._generateImagesArray(track.attributes.artwork.url);
+    const title = track.attributes.name;
+    const artist = track.attributes.artistName;
+    const link = track.attributes.url;
+    return { provider: this.provider, id, images, title, artist, link };
   }
 
   //////  GET ARTIST DETAILS
@@ -205,9 +211,7 @@ export default class Apple {
     const link = artist.attributes.url;
     const imageUrl = await this._getArtistImage(link);
     const images = this._generateImagesArray(imageUrl);
-    const artistInfo = { id, images, title, link };
-    debug('Get artist Details: %o', artistInfo);
-    return artistInfo;
+    return { provider: this.provider, id, images, title, link };
   }
 
   //////  GET ALBUM DETAILS
@@ -220,9 +224,7 @@ export default class Apple {
     const title = album.attributes.name;
     const artist = album.attributes.artistName;
     const link = album.attributes.url;
-    const albumInfo = { id, images, title, artist, link };
-    debug('Get album Details: %o', albumInfo);
-    return albumInfo;
+    return { provider: this.provider, id, images, title, artist, link };
   }
 
   //////  GET ARTIST IMAGE
@@ -241,7 +243,7 @@ export default class Apple {
         return ogImage.replace(/[\d]+x[\d]+/, '{w}x{h}');
       })
       .catch(error => {
-        console.log(error);
+        debug('Get Artist Image Failed: %O', error);
       });
   }
 

@@ -1,12 +1,38 @@
 require('dotenv').config();
 const debug = require('debug')('transpose-app');
+const DynamoDB = require('aws-sdk/clients/dynamodb');
+const nanoid = require('nanoid');
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 app.use(bodyParser.json());
-const port = 3000;
+const https = require('https');
+const agent = new https.Agent({
+  keepAlive: true,
+});
 
 const DEBUG = process.env.NODE_ENV === 'development';
+
+const TRANSPOSE_LINK_BASE = 'https://transpose.com';
+const port = 3000;
+
+// ID GENERATION
+const NANOID_LENGTH = 10;
+
+// DynamoDB
+var dynamoDB = new DynamoDB.DocumentClient({
+  httpOptions: {
+    agent,
+  },
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
+  region: process.env.AWS_REGION,
+  apiVersion: '2012-08-10',
+  //logger: DEBUG ? console : null,
+});
+const TABLENAME = 'transpose';
 
 import Spotify from './providers/spotify';
 import Apple from './providers/apple';
@@ -27,83 +53,141 @@ app.get(
   }),
 );
 
-//////  CONVERT LINK
-//  Processes link and converts to other provider(s)
-//  Example Links
-//    Song
-//      https://open.spotify.com/track/2TpZlmChocrfeL5J6ed70t?si=1JWq_So9TM6XR2TmEsr_KA
-//      https://music.apple.com/us/album/kingdom-come/1440881327?i=1440881974
-//    Artist
-//      https://open.spotify.com/artist/50JJSqHUf2RQ9xsHs0KMHg?si=jceTIi5yRVWkOE6mm58-Yw
-//      https://music.apple.com/us/artist/jon-bellion/659289673
-//    Album
-//      https://open.spotify.com/album/0Qfwzu4yfzVUIrBLittdDO?si=7-GMsIKJQayMoTTlaJ4aGQ
-//      https://music.apple.com/us/album/the-separation/1440881327
-//    Playlist
-//      https://open.spotify.com/playlist/37i9dQZF1DZ06evO2WuK7C?si=7u10J4uvQMOZmIfScbKDnQ
-//      https://music.apple.com/us/playlist/apple-music-jon-bellion-playlist/pl.u-aZb009ruKAoyj3
+//////  GENERATE TRANSPOSE LINK
+//  Processes @link and generates a Transpose link for it.
+//  GET https://tranpose.com/transpose/:provider/:type/:id
 //////
-app.post(
-  '/convert',
+app.get(
+  '/transpose/:provider/:type/:id',
   asyncWrapper(async (req, res) => {
-    if (!req.body.link || !req.body.destProviderID) {
+    // Validate query parameters exist
+    if (!req.params.provider || !req.params.type || !req.params.id) {
       res.sendStatus(400);
     }
 
-    const { link, destProviderID } = req.body;
-    debug(`Convert link to ${destProviderID}: %o`, link);
-    const srcProvider = providers[determineProviderFromLink(link)];
-    const destProvider = providers[destProviderID];
+    const { provider, type, id } = req.params;
+    const linkID = `${provider}:${type}:${id}`;
+    let transposeResults = {};
+    let query = '';
 
-    // Ensure fresh tokens
-    if (DEBUG) {
-      await srcProvider.refreshToken();
-      await destProvider.refreshToken();
-    }
+    debug('Transpose: %o', linkID);
 
-    const elementInfo = srcProvider.extractElementInfo(link);
-    const elementData = await srcProvider.getElementData(elementInfo);
+    // Check DB for linkID
+    const linkRecord = await getLinkRecord(linkID);
 
-    if (elementInfo.type === 'playlist') {
-      // Search each track in the playlist in parallel
-      const convertedPlaylistLinks = await Promise.all(
-        elementData.tracks.map(track =>
-          destProvider.search({ type: 'track' }, track),
-        ),
-      );
-      convertedPlaylistLinks.type = elementInfo.type;
-      debug('Response: %O', convertedPlaylistLinks);
-      res.send(convertedPlaylistLinks);
+    if (linkRecord) {
+      debug('Found DB record. Skipping link processing.');
+      transposeResults = linkRecord.content;
+      query = linkRecord.terms;
     } else {
-      const convertedLink = await destProvider.search(elementInfo, elementData);
-      convertedLink.type = elementInfo.type;
-      res.send(convertedLink);
+      debug('No DB record found. Processing link...');
+      const processResults = await processLink(provider, type, id);
+      transposeResults = processResults.transposeResults;
+      query = processResults.query;
     }
+
+    debug('Processing complete. Creating record.');
+
+    // Generate ID
+    const transposeID = nanoid(NANOID_LENGTH);
+    debug('Generated ID: %o', transposeID);
+
+    // Add record to DB
+    await putTransposeRecord(transposeID, linkID, query, transposeResults);
+    debug('Put Transpose record in DB');
+
+    // Construct Transpose link and add to result object
+    const transposeLink = `${TRANSPOSE_LINK_BASE}/${transposeID}`;
+    transposeResults.transpose = {
+      link: transposeLink,
+    };
+
+    debug('Transpose Complete: %o', transposeLink);
+
+    res.send(transposeResults);
   }),
 );
 
-////// DETERMINE PROVIDER FROM LINK
-//  Extracts the domain and compares to domains of supported providers.
+//////  QUERY DB FOR LINK RECORD
+//  Queries for @linkId record
 //////
-const determineProviderFromLink = link => {
-  let providerId = '';
-  const provider = link.match(/\.(\w+)\./)[1];
-
-  switch (provider) {
-    case 'spotify':
-      providerId = 'spotify';
-      break;
-    case 'apple':
-      providerId = 'apple';
-      break;
-    default:
-      debug('Unsupported Provider');
-      throw new Error('Unsupported Provider');
-  }
-
-  debug('Provider: %o', providerId);
-  return providerId;
+const getLinkRecord = linkID => {
+  return dynamoDB
+    .query({
+      TableName: TABLENAME,
+      IndexName: 'link-index',
+      KeyConditionExpression: 'linkID = :id',
+      ExpressionAttributeValues: { ':id': linkID },
+      ProjectionExpression: 'terms, content',
+    })
+    .promise()
+    .then(response => {
+      return response.Items[0];
+    })
+    .catch(error => {
+      debug('Query Error: %O', error);
+      throw new Error(error);
+    });
 };
+
+//////  PUT TRANSPOSE RECORD IN DB
+//  Put @transposeID record in DB.
+//////
+const putTransposeRecord = (transposeID, linkID, query, transposeResults) => {
+  return dynamoDB
+    .put({
+      TableName: TABLENAME,
+      Item: {
+        id: transposeID,
+        linkID,
+        terms: query,
+        content: transposeResults,
+      },
+    })
+    .promise();
+};
+
+//////  PROCESS LINK
+//  Get info for element and then search other providers
+//////
+const processLink = (provider, type, id) => {
+  return new Promise(async (resolve, reject) => {
+    if (DEBUG) {
+      await Promise.all(Object.values(providers).map(p => p.refreshToken()));
+    }
+
+    const element = await providers[provider].getElement(type, id);
+    const convertedLinks = await Promise.all(
+      Object.values(providers).map(p => p.search(type, element)),
+    );
+
+    // Need to generate the query for storing in the DB
+    const query = Object.values(element)
+      .map(val => val)
+      .join(' ');
+
+    const transposeResults = {};
+    convertedLinks.map(convertedLink => {
+      transposeResults[convertedLink.provider] = convertedLink;
+    });
+
+    debug('Transpose Results: %O', transposeResults);
+    resolve({ query, transposeResults });
+  });
+};
+
+//////  RESOLVE TRANSPOSE LINK
+//  Retrieves info for Tranpose link with @id.
+//  GET https://transpose.com/:id
+//////
+app.get(
+  '/:id',
+  asyncWrapper(async (req, res) => {
+    if (!req.params.id) {
+      res.sendStatus(400);
+    }
+  }),
+);
 
 //////  RUN ASYNC WRAPPER
 //  Async wrapper to catch errors without try/catch

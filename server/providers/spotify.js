@@ -7,6 +7,7 @@ export default class Spotify {
   token = process.env.SPOTIFY_TOKEN;
   client_id = process.env.SPOTIFY_CLIENT_ID;
   client_secret = process.env.SPOTIFY_CLIENT_SECRET;
+  provider = 'spotify';
   searchUrl = 'https://api.spotify.com/v1/search';
   tokenUrl = 'https://accounts.spotify.com/api/token';
 
@@ -52,11 +53,11 @@ export default class Spotify {
     return { type, id };
   }
 
-  //////  GET ELEMENT DATA
+  //////  GET ELEMENT
   //  Get element of @type with @id and parse the response
   //  https://api.spotify.com/v1/{type}/{id}
   //////
-  getElementData({ type, id }) {
+  getElement(type, id) {
     return axios
       .get(`https://api.spotify.com/v1/${type}s/${id}`, {
         headers: { Authorization: `Bearer ${this.token}` },
@@ -104,7 +105,7 @@ export default class Spotify {
   //  Query for results of @type with @query & @limit
   //  https://developer.spotify.com/documentation/web-api/reference/search/search/
   //////
-  search({ type }, query, limit = 1) {
+  search(type, query, limit = 1) {
     type = type === 'song' ? 'track' : type;
     const q = this._formatQueryString(query);
 
@@ -136,21 +137,24 @@ export default class Spotify {
               if (cleanTitle) {
                 debug('Requerying...');
                 query.title = cleanTitle;
-                return await this.search({ type }, query, limit);
+                return await this.search(type, query, limit);
               }
             }
             const trackInfo = this._getTrackInfo(tracks[0]);
-            debug('Search Successful: %o', trackInfo);
+            trackInfo.type = type;
+            debug('Search Successful');
             return trackInfo;
           case 'artist':
             const artists = response.data.artists.items;
             const artistInfo = this._getArtistInfo(artists[0]);
-            debug('Search Successful: %o', artistInfo);
+            artistInfo.type = type;
+            debug('Search Successful');
             return artistInfo;
           case 'album':
             const albums = response.data.albums.items;
             const albumInfo = this._getAlbumInfo(albums[0]);
-            debug('Search Successful: %o', albumInfo);
+            albumInfo.type = type;
+            debug('Search Successful');
             return albumInfo;
           default:
             throw new Error('Type not implemented yet');
@@ -158,7 +162,7 @@ export default class Spotify {
       })
       .catch(function(error) {
         debug('Search Failed: \n%O', error);
-        debug('> Query: %s', q);
+        debug('> Query: %s, %s', q, type);
         return error.data;
       });
   }
@@ -201,7 +205,7 @@ export default class Spotify {
     const title = track.name;
     const artist = track.artists[0].name;
     const link = track.external_urls.spotify;
-    return { id, images, title, artist, link };
+    return { provider: this.provider, id, images, title, artist, link };
   }
 
   //////  GET ARTIST DETAILS
@@ -213,7 +217,7 @@ export default class Spotify {
     const images = artist.images;
     const title = artist.name;
     const link = artist.external_urls.spotify;
-    return { id, images, title, link };
+    return { provider: this.provider, images, title, link };
   }
 
   //////  GET ALBUM DETAILS
@@ -226,6 +230,6 @@ export default class Spotify {
     const title = album.name;
     const artist = album.artists[0].name;
     const link = album.external_urls.spotify;
-    return { id, images, title, artist, link };
+    return { provider: this.provider, id, images, title, artist, link };
   }
 }
