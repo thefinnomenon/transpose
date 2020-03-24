@@ -1,17 +1,10 @@
 import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import ElementImage from './ElementImage';
-
-export interface IMetadata {
-  type: 'track' | 'artist' | 'album';
-  images: string[];
-  track: string;
-  artist: string;
-  album: string;
-}
+import { MetadataType } from '../../App';
 
 type Props = {
-  metadata: IMetadata;
+  metadata: MetadataType;
 } & typeof defaultProps;
 
 const defaultProps = Object.freeze({});

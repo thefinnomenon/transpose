@@ -16,10 +16,21 @@ import {
   extractAppleLinkInfo,
   extractSpotifyLinkInfo,
 } from './src/utlities';
-import ElementDisplay, { IMetadata } from './src/components/ElementDisplay';
+import Header from './src/components/Header';
+import ElementDisplay from './src/components/ElementDisplay';
 import ProviderButton from './src/components/ProviderButton';
 
 const baseURL = 'http://2c2312ab.ngrok.io';
+
+export type ElementType = 'track' | 'artist' | 'album';
+
+export type MetadataType = {
+  type: ElementType;
+  images: string[];
+  track: string;
+  artist: string;
+  album: string;
+};
 
 enum State {
   WAITING,
@@ -46,13 +57,37 @@ const providers: {
   },
 };
 
+const initState = {
+  inputText: '',
+  state: State.WAITING,
+  metadata: {
+    type: 'track' as ElementType,
+    images: [''],
+    track: '',
+    artist: '',
+    album: '',
+  },
+  links: {},
+};
+
 const App = () => {
-  const [inputText, setInputText] = useState('');
-  const [state, setState] = useState(State.WAITING);
-  const [elementMetadata, setElementMetadata] = useState<IMetadata>();
-  const [transposedLinks, setElementLinks] = useState<{
-    [key: string]: string;
-  }>({});
+  const [inputText, setInputText] = useState(initState.inputText);
+  const [state, setState] = useState(initState.state);
+  const [metadata, setMetadata] = useState<MetadataType>(initState.metadata);
+  const [links, setLinks] = useState<{ [key: string]: string }>(
+    initState.links,
+  );
+
+  const handleBackPress = () => {
+    setInputText(initState.inputText);
+    setMetadata(initState.metadata);
+    setLinks(initState.links);
+    setState(initState.state);
+  };
+
+  const handleSettingsPress = () => {
+    debug('Open settings modal');
+  };
 
   const transpose = (link: string) => {
     const provider = determineProviderFromLink(link);
@@ -61,19 +96,16 @@ const App = () => {
     }
 
     debug('Transposing link %o', link);
-
     const { type, id } = providers[provider].extractLinkInfo(link);
-
     setState(State.LOADING);
-    setInputText('');
 
     axios
       .get(`/transpose/${provider}/${type}/${id}`)
       .then(response => {
         const element = response.data;
         debug('Transpose Success: %o', element);
-        setElementMetadata(element.metadata);
-        setElementLinks(element.links);
+        setMetadata(element.metadata);
+        setLinks(element.links);
         setState(State.DONE);
         //openLink(response.data);
       })
@@ -88,14 +120,20 @@ const App = () => {
       <StatusBar barStyle="dark-content" />
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.container}>
+          <Header
+            showBackButton={state === State.DONE}
+            onBackPress={handleBackPress}
+            onSettingsPress={handleSettingsPress}
+          />
           <View style={styles.topContent}>
-            {elementMetadata && <ElementDisplay metadata={elementMetadata} />}
+            {state === State.DONE && <ElementDisplay metadata={metadata} />}
             {state === State.WAITING && (
               <TextInput
                 style={styles.linkInput}
                 placeholder="Paste link here to be Transposed!"
                 placeholderTextColor="#808080"
                 onChangeText={text => {
+                  debug('ONCHANGETEXT: %o', text);
                   setInputText(text);
                   transpose(text);
                 }}
@@ -107,13 +145,14 @@ const App = () => {
             )}
           </View>
           <View style={styles.buttons}>
-            {Object.keys(providers).map(providerID => (
-              <ProviderButton
-                key={providerID}
-                title={providers[providerID].name}
-                link={transposedLinks[providerID]}
-              />
-            ))}
+            {state === State.DONE &&
+              Object.keys(providers).map(providerID => (
+                <ProviderButton
+                  key={providerID}
+                  title={providers[providerID].name}
+                  link={links[providerID]}
+                />
+              ))}
           </View>
         </View>
       </SafeAreaView>
@@ -134,11 +173,11 @@ const styles = StyleSheet.create({
     flex: 2,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: '15%',
+    marginTop: '5%',
   },
   linkInput: {
     height: 40,
-    width: '80%',
+    width: 300, //'80%',
     borderBottomColor: 'black',
     borderBottomWidth: 1,
     color: '#101010',

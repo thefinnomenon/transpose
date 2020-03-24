@@ -11,7 +11,7 @@ export const determineProviderFromLink = (link: string) => {
 
   if (!provider) {
     debug('Unsupported Provider');
-    throw new Error('Unsupported Provider');
+    return;
   }
 
   switch (provider[1]) {
@@ -32,19 +32,19 @@ export const determineProviderFromLink = (link: string) => {
 
 ////// EXTRACT APPLE LINK INFO
 //  Parses @link to extract element type and id.
-//  https://music.apple.com/{loc}/{type}/{title}/{id}?i={song-id}
-//                       only exists for song links -^-----------^
+//  https://music.apple.com/{loc}/{type}/{title}/{id}?i={trackID}
+//                      only exists for track links -^-----------^
 //////
 export const extractAppleLinkInfo = (link: string) => {
   const { groups } = link.match(
-    /https:\/\/music\.apple\.com\/(?<storefront>\w+)\/(?<type>\w+)\/(?<title>[a-zA-Z0-9\-]+)\/(?<id>[a-zA-Z0-9\-\.]+)(\?i\=)?(?<songID>\d+)?/,
+    /https:\/\/music\.apple\.com\/(?<storefront>\w+)\/(?<type>\w+)\/(?<title>[a-zA-Z0-9\-]+)\/(?<id>[a-zA-Z0-9\-\.]+)(\?i\=)?(?<trackID>\d+)?/,
   );
 
-  // If songID exists then it is a song. We have to use this check instead of
-  // the type because, for some reason, Apple links the song under the album type
-  // and adds a song identifier as a parameter.
-  const type = groups.songID ? 'song' : groups.type;
-  const id = type === 'song' ? groups.songID : groups.id;
+  // If trackID exists then it is a track. We have to use this check instead of
+  // the type because, for some reason, Apple links the track under the album type
+  // and adds a track identifier as a parameter.
+  const type = groups.trackID ? 'track' : groups.type;
+  const id = type === 'track' ? groups.trackID : groups.id;
 
   const elementInfo = {
     storefront: groups.storefront,
