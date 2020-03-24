@@ -243,10 +243,10 @@ const formatResults = (results, transposeLink) => {
     if (!metadata && results[provider]) {
       const type = results[provider].type || '';
       const images = results[provider].images || '';
-      const title = results[provider].title || '';
+      const track = results[provider].track || '';
       const artist = results[provider].artist || '';
       const album = results[provider].album || '';
-      metadata = { type, images, title, artist, album };
+      metadata = { type, images, track, artist, album };
     }
 
     links[provider] = results[provider].link;
