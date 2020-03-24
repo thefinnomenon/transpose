@@ -19,13 +19,13 @@ export const Header = ({
   <View style={styles.container}>
     {showBackButton && (
       <TouchableOpacity style={styles.backButton} onPress={() => onBackPress()}>
-        <Icon name="ios-arrow-back" size={40} />
+        <Icon name="ios-arrow-back" size={40} color="#080808" />
       </TouchableOpacity>
     )}
     <TouchableOpacity
       style={styles.settingsButton}
       onPress={() => onSettingsPress()}>
-      <Icon2 name="settings" size={40} />
+      <Icon2 name="settings" size={40} color="#080808" />
     </TouchableOpacity>
   </View>
 );
@@ -41,13 +41,11 @@ const styles = StyleSheet.create({
   backButton: {
     width: 40,
     height: 40,
-    color: '#080808',
   },
   settingsButton: {
     width: 40,
     height: 40,
     marginLeft: 'auto',
-    color: '#080808',
   },
 });
 
