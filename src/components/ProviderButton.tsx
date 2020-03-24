@@ -5,23 +5,32 @@ import {
   View,
   TouchableOpacity,
   Text,
-  Linking,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/EvilIcons';
+import { MetadataType } from 'App';
 
 type Props = {
   title: string;
   link: string;
+  metadata: MetadataType;
+  handleShare(metadata: MetadataType, link: string): void;
+  handleOpen(link: string): void;
 } & typeof defaultProps;
 
 const defaultProps = Object.freeze({});
 
-export const ProviderButton = ({ title, link }: Props) => (
+export const ProviderButton = ({
+  title,
+  link,
+  metadata,
+  handleShare,
+  handleOpen,
+}: Props) => (
   <View style={styles.container}>
     <TouchableOpacity
       style={styles.shareButton}
       disabled={link == null}
-      onPress={() => console.log('Share link: %o', link)}>
+      onPress={() => handleShare(metadata, link)}>
       <Icon
         name={Platform.OS === 'ios' ? 'share-apple' : 'share-google'}
         size={40}
@@ -31,23 +40,11 @@ export const ProviderButton = ({ title, link }: Props) => (
     <TouchableOpacity
       style={styles.openButton}
       disabled={link == null}
-      onPress={() => openLink(link)}>
+      onPress={() => handleOpen(link)}>
       <Text style={styles.title}>{title}</Text>
     </TouchableOpacity>
   </View>
 );
-
-const openLink = (link: string) => {
-  Linking.canOpenURL(link)
-    .then(supported => {
-      if (!supported) {
-        console.log("Can't handle url: " + link);
-      } else {
-        return Linking.openURL(link);
-      }
-    })
-    .catch(err => console.error('An error occurred', err));
-};
 
 const styles = StyleSheet.create({
   container: {

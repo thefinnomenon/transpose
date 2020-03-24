@@ -59,6 +59,15 @@
 	</array>
 	<key>LSApplicationCategoryType</key>
 	<string></string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>instagram</string>
+		<string>instagram-stories</string>
+		<string>twitter</string>
+		<string>facebook</string>
+  	<string>whatsapp</string>
+  	<string>mailto</string>
+	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 </dict>

@@ -3,13 +3,16 @@ import Debug from 'debug';
 Debug.enable('*');
 const debug = Debug('transpose-main');
 import Axios from 'axios';
+import Share from 'react-native-share';
 import {
   StatusBar,
   SafeAreaView,
   StyleSheet,
   View,
   TextInput,
+  Image,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import {
   determineProviderFromLink,
@@ -30,6 +33,11 @@ export type MetadataType = {
   track: string;
   artist: string;
   album: string;
+};
+
+export type Element = {
+  metadata: MetadataType;
+  links: { [key: string]: string };
 };
 
 enum State {
@@ -101,13 +109,18 @@ const App = () => {
 
     axios
       .get(`/transpose/${provider}/${type}/${id}`)
-      .then(response => {
-        const element = response.data;
+      .then(async response => {
+        const element: Element = response.data;
         debug('Transpose Success: %o', element);
         setMetadata(element.metadata);
         setLinks(element.links);
+        await Image.prefetch(element.metadata.images[1]);
+        debug('Prefetched Image!');
         setState(State.DONE);
-        //openLink(response.data);
+        setTimeout(
+          () => openShare(element.metadata, element.links.transpose),
+          1500,
+        );
       })
       .catch(error => {
         debug('Transpose Error: %o', error);
@@ -120,11 +133,13 @@ const App = () => {
       <StatusBar barStyle="dark-content" />
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.container}>
-          <Header
-            showBackButton={state === State.DONE}
-            onBackPress={handleBackPress}
-            onSettingsPress={handleSettingsPress}
-          />
+          {state !== State.LOADING && (
+            <Header
+              showBackButton={state === State.DONE}
+              onBackPress={handleBackPress}
+              onSettingsPress={handleSettingsPress}
+            />
+          )}
           <View style={styles.topContent}>
             {state === State.DONE && <ElementDisplay metadata={metadata} />}
             {state === State.WAITING && (
@@ -145,19 +160,72 @@ const App = () => {
             )}
           </View>
           <View style={styles.buttons}>
-            {state === State.DONE &&
-              Object.keys(providers).map(providerID => (
+            {state === State.DONE && (
+              <View>
                 <ProviderButton
-                  key={providerID}
-                  title={providers[providerID].name}
-                  link={links[providerID]}
+                  key="transpose"
+                  title="Transpose"
+                  link={links.transpose}
+                  metadata={metadata}
+                  handleShare={openShare}
+                  handleOpen={openLink}
                 />
-              ))}
+                {Object.keys(providers).map(providerID => (
+                  <ProviderButton
+                    key={providerID}
+                    title={providers[providerID].name}
+                    link={links[providerID]}
+                    metadata={metadata}
+                    handleShare={openShare}
+                    handleOpen={openLink}
+                  />
+                ))}
+              </View>
+            )}
           </View>
         </View>
       </SafeAreaView>
     </>
   );
+};
+
+const openLink = (link: string) => {
+  Linking.canOpenURL(link)
+    .then(supported => {
+      if (!supported) {
+        console.log("Can't handle url: " + link);
+      } else {
+        return Linking.openURL(link);
+      }
+    })
+    .catch(err => console.error('An error occurred', err));
+};
+
+const openShare = (metadata: MetadataType, link: string) => {
+  const message = formatMessage(metadata);
+  Share.open({
+    url: link,
+    message,
+    title: message,
+    subject: `Checkout this ${metadata.type}!`,
+  })
+    .then(res => {
+      debug(res);
+    })
+    .catch(err => {
+      debug(err);
+    });
+};
+
+const formatMessage = ({ type, album, artist, track }: MetadataType) => {
+  switch (type) {
+    case 'track':
+      return `${artist} - ${track}`;
+    case 'artist':
+      return artist;
+    case 'album':
+      return `${artist} - ${album}`;
+  }
 };
 
 const styles = StyleSheet.create({
