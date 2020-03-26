@@ -94,7 +94,15 @@ const App = (props: any) => {
 
   const handleOpenURL = ({ url }: { url: string }) => {
     debug('Handle Open URL: %o', url);
-    transpose(url);
+    if (!url) {
+      return;
+    }
+
+    if (url.includes('transpose')) {
+      resolveTranspose(url);
+    } else {
+      transpose(url);
+    }
   };
 
   const handleBackPress = () => {
@@ -119,18 +127,51 @@ const App = (props: any) => {
     }
   }, [props.url]);
 
-  // // Check if launched via deep link and
-  // // register deep link listener
-  // useEffect(() => {
-  //   Linking.getInitialURL()
-  //     .then(url => handleOpenURL({ url: `${url}` }))
-  //     .catch(error => debug('Get Initial URL Error: %O', error));
+  // Check if launched via deep link and
+  // register deep link listener
+  useEffect(() => {
+    Linking.getInitialURL()
+      .then(url => handleOpenURL({ url: `${url}` }))
+      .catch(error => debug('Get Initial URL Error: %O', error));
 
-  //   Linking.addEventListener('url', handleOpenURL);
-  //   return () => {
-  //     Linking.removeEventListener('url', handleOpenURL);
-  //   };
-  // }, []);
+    Linking.addEventListener('url', handleOpenURL);
+    return () => {
+      Linking.removeEventListener('url', handleOpenURL);
+    };
+  }, []);
+
+  const resolveTranspose = (link: string) => {
+    debug('Resolving Transpose Link: %o', link);
+    const res = link.match(/https?:\/\/transpose.com\/t\/(.*)/);
+    if (!res) {
+      debug('Transpose ID not found');
+      return;
+    }
+
+    const id = res[1];
+    debug('Resolving Tranpose With ID: %o', id);
+    setState(State.LOADING);
+
+    axios
+      .get(`/t/${id}`)
+      .then(async response => {
+        const element: Element = response.data;
+        debug('Tranpose Resolve Success: %o', element);
+        setMetadata(element.metadata);
+        setLinks(element.links);
+        await Image.prefetch(element.metadata.images[1]);
+        debug('Prefetched Image!');
+        setState(State.DONE);
+        setTimeout(
+          () => openShare(element.metadata, element.links.transpose),
+          1500,
+        );
+      })
+      .catch(error => {
+        debug('Transpose Error: %o', error);
+        setState(State.WAITING);
+      });
+  };
 
   const transpose = (link: string) => {
     const provider = determineProviderFromLink(link);
