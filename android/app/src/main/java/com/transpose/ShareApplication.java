@@ -12,7 +12,7 @@ import java.util.List;
 
 import com.transpose.SharePackage;
 
-public class MainApplication extends Application implements ReactApplication {
+public class ShareApplication extends Application implements ReactApplication {
 
   private final ReactNativeHost mReactNativeHost =
       new ReactNativeHost(this) {

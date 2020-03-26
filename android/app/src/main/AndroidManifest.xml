@@ -12,7 +12,7 @@
       android:theme="@style/AppTheme">
       <activity
         android:name=".MainActivity"
-        android:launchMode="singleTask"
+        android:launchMode="singleTop"
         android:label="@string/app_name"
         android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
         android:windowSoftInputMode="adjustResize">
@@ -20,7 +20,7 @@
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
-        <!-- Intents for receiving share from other Apps -->
+        <!-- Share Extension Intent-->
         <intent-filter>
           <action android:name="android.intent.action.SEND"/>
           <category android:name="android.intent.category.DEFAULT"/>

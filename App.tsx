@@ -4,6 +4,8 @@ Debug.enable('*');
 const debug = Debug('transpose-main');
 import Axios from 'axios';
 import Share from 'react-native-share';
+import ShareExtension from './ShareExtension';
+
 import {
   StatusBar,
   SafeAreaView,
@@ -82,7 +84,7 @@ type Props = {
   url: string;
 };
 
-const App = (props: Props) => {
+const App = (props: any) => {
   const [inputText, setInputText] = useState(initState.inputText);
   const [state, setState] = useState(initState.state);
   const [metadata, setMetadata] = useState<MetadataType>(initState.metadata);
@@ -108,22 +110,27 @@ const App = (props: Props) => {
 
   // Check if launched via share
   useEffect(() => {
-    debug('App Launched with URL: ', props.url);
-    transpose(props.url);
+    debug('App Launched with props: ', props);
+    ShareExtension.data().then((data: { value: string; type: string }) => {
+      debug('Share Extension Data: %o', data);
+    });
+    if (props.url) {
+      transpose(props.url);
+    }
   }, [props.url]);
 
-  // Check if launched via deep link and
-  // register deep link listener
-  useEffect(() => {
-    Linking.getInitialURL()
-      .then(url => handleOpenURL({ url: `${url}` }))
-      .catch(error => debug('Get Initial URL Error: %O', error));
+  // // Check if launched via deep link and
+  // // register deep link listener
+  // useEffect(() => {
+  //   Linking.getInitialURL()
+  //     .then(url => handleOpenURL({ url: `${url}` }))
+  //     .catch(error => debug('Get Initial URL Error: %O', error));
 
-    Linking.addEventListener('url', handleOpenURL);
-    return () => {
-      Linking.removeEventListener('url', handleOpenURL);
-    };
-  }, []);
+  //   Linking.addEventListener('url', handleOpenURL);
+  //   return () => {
+  //     Linking.removeEventListener('url', handleOpenURL);
+  //   };
+  // }, []);
 
   const transpose = (link: string) => {
     const provider = determineProviderFromLink(link);
@@ -223,7 +230,7 @@ const openLink = (link: string) => {
       if (!supported) {
         console.log("Can't handle url: " + link);
       } else {
-        return Linking.openURL(link);
+        Linking.openURL(link);
       }
     })
     .catch(err => console.error('An error occurred', err));
@@ -239,6 +246,7 @@ const openShare = (metadata: MetadataType, link: string) => {
   })
     .then(res => {
       debug(res);
+      ShareExtension.close();
     })
     .catch(err => {
       debug(err);
