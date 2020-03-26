@@ -28,6 +28,7 @@ var dynamoDB = new DynamoDB.DocumentClient({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   },
+  convertEmptyValues: true,
   region: process.env.AWS_REGION,
   apiVersion: '2012-08-10',
   //logger: DEBUG ? console : null,
@@ -92,13 +93,17 @@ app.get(
     const transposeID = nanoid(NANOID_LENGTH);
     debug('Generated ID: %o', transposeID);
 
+    // Format results
+    const formattedResults = formatResults(transposeResults);
+    debug('Formatted Results: %O', formattedResults);
+
     // Add record to DB
-    await putTransposeRecord(transposeID, linkID, query, transposeResults);
+    await putTransposeRecord(transposeID, linkID, query, formattedResults);
     debug('Put Transpose record in DB');
 
-    // Construct Transpose link, format response, and add link
-    const transposeLink = `${TRANSPOSE_LINK_BASE}/${transposeID}`;
-    const formattedResults = formatResults(transposeResults, transposeLink);
+    // Construct Transpose link and add to result
+    const transposeLink = `${TRANSPOSE_LINK_BASE}/t/${transposeID}`;
+    formattedResults.links.transpose = transposeLink;
 
     debug('Transpose Complete: %o', transposeLink);
 
@@ -108,10 +113,10 @@ app.get(
 
 //////  RESOLVE TRANSPOSE LINK
 //  Retrieves info for Tranpose link with @id.
-//  GET https://transpose.com/:id
+//  GET https://transpose.com/t/:id
 //////
 app.get(
-  '/:id',
+  '/t/:id',
   asyncWrapper(async (req, res) => {
     if (!req.params.id) {
       res.sendStatus(400);
@@ -123,9 +128,12 @@ app.get(
     const record = await getTransposeRecord(id);
 
     if (!record.Item) {
+      debug('[404] Failed to find Transpose link with ID: %o', id);
       res.sendStatus(404);
       return;
     }
+
+    debug('Resolved Transpose link: %O', record.Item.content);
 
     res.send(record.Item.content);
   }),
@@ -188,7 +196,7 @@ const getTransposeRecord = transposeID => {
 //  Get info for element and then search other providers
 //////
 const processLink = (provider, type, id) => {
-  return new Promise(async (resolve, reject) => {
+  return new Promise(async resolve => {
     if (DEBUG) {
       await Promise.all(Object.values(providers).map(p => p.refreshToken()));
     }
@@ -230,12 +238,11 @@ const processLink = (provider, type, id) => {
 //    links: {
 //      spotify: '',
 //      apple: '',
-//      transpose: '',
 //    }
 //  }
 //
 //////
-const formatResults = (results, transposeLink) => {
+const formatResults = results => {
   let metadata;
   let links = {};
   for (const provider of Object.keys(providers)) {
@@ -251,9 +258,6 @@ const formatResults = (results, transposeLink) => {
 
     links[provider] = results[provider].link;
   }
-
-  links.transpose = transposeLink;
-
   return { metadata, links };
 };
 
