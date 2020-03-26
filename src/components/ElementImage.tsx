@@ -27,6 +27,7 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.7,
     shadowRadius: 10,
+    borderRadius: Math.round(Dimensions.get('window').width / 2),
     elevation: 5,
   },
   squareImage: {

@@ -12,12 +12,46 @@
       android:theme="@style/AppTheme">
       <activity
         android:name=".MainActivity"
+        android:launchMode="singleTask"
         android:label="@string/app_name"
         android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
         android:windowSoftInputMode="adjustResize">
         <intent-filter>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+        <!-- Intents for receiving share from other Apps -->
+        <intent-filter>
+          <action android:name="android.intent.action.SEND"/>
+          <category android:name="android.intent.category.DEFAULT"/>
+          <data android:mimeType="text/plain"/>
+        </intent-filter>
+        <!-- Intents for deep link from http(s)://(www.)transpose.com/t -->
+        <intent-filter>
+          <action android:name="android.intent.action.VIEW" />
+          <category android:name="android.intent.category.DEFAULT" />
+          <category android:name="android.intent.category.BROWSABLE" />
+          <data android:scheme="http"
+            android:host="www.transpose.com"
+            android:pathPrefix="/t" />
+          <data android:scheme="https"
+            android:host="www.transpose.com"
+            android:pathPrefix="/t" />
+          <data android:scheme="http"
+            android:host="transpose.com"
+            android:pathPrefix="/t" />
+          <data android:scheme="https"
+            android:host="transpose.com"
+            android:pathPrefix="/t" />
+          <!-- note that the leading "/" is required for pathPrefix-->
+        </intent-filter>
+        <!-- Intent for deep link from transpose:// -->
+        <intent-filter>
+          <action android:name="android.intent.action.VIEW" />
+          <category android:name="android.intent.category.DEFAULT" />
+          <category android:name="android.intent.category.BROWSABLE" />
+          <!-- Accepts URIs that begin with "transpose:// -->
+          <data android:scheme="transpose"/>
         </intent-filter>
       </activity>
       <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" />

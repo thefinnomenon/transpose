@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Debug from 'debug';
 Debug.enable('*');
 const debug = Debug('transpose-main');
@@ -78,13 +78,22 @@ const initState = {
   links: {},
 };
 
-const App = () => {
+type Props = {
+  url: string;
+};
+
+const App = (props: Props) => {
   const [inputText, setInputText] = useState(initState.inputText);
   const [state, setState] = useState(initState.state);
   const [metadata, setMetadata] = useState<MetadataType>(initState.metadata);
   const [links, setLinks] = useState<{ [key: string]: string }>(
     initState.links,
   );
+
+  const handleOpenURL = ({ url }: { url: string }) => {
+    debug('Handle Open URL: %o', url);
+    transpose(url);
+  };
 
   const handleBackPress = () => {
     setInputText(initState.inputText);
@@ -96,6 +105,25 @@ const App = () => {
   const handleSettingsPress = () => {
     debug('Open settings modal');
   };
+
+  // Check if launched via share
+  useEffect(() => {
+    debug('App Launched with URL: ', props.url);
+    transpose(props.url);
+  }, [props.url]);
+
+  // Check if launched via deep link and
+  // register deep link listener
+  useEffect(() => {
+    Linking.getInitialURL()
+      .then(url => handleOpenURL({ url: `${url}` }))
+      .catch(error => debug('Get Initial URL Error: %O', error));
+
+    Linking.addEventListener('url', handleOpenURL);
+    return () => {
+      Linking.removeEventListener('url', handleOpenURL);
+    };
+  }, []);
 
   const transpose = (link: string) => {
     const provider = determineProviderFromLink(link);
