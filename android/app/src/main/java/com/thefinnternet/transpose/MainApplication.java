@@ -1,4 +1,4 @@
-package com.transpose;
+package com.thefinnternet.transpose;
 
 import android.app.Application;
 import android.content.Context;
@@ -10,7 +10,7 @@ import com.facebook.soloader.SoLoader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
-import com.transpose.SharePackage;
+import com.thefinnternet.transpose.SharePackage;
 
 public class MainApplication extends Application implements ReactApplication {
 

@@ -1,4 +1,4 @@
-package com.transpose;
+package com.thefinnternet.transpose;
 
 import android.content.Intent;
 import android.app.Activity;

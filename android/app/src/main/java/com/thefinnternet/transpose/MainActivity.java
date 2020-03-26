@@ -1,4 +1,4 @@
-package com.transpose;
+package com.thefinnternet.transpose;
 
 import com.facebook.react.ReactActivityDelegate;
 import com.facebook.react.ReactActivity;

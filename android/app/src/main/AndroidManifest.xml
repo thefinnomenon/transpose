@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.transpose">
+  package="com.thefinnternet.transpose">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -27,7 +27,7 @@
           <data android:mimeType="text/plain"/>
         </intent-filter>
         <!-- Intents for deep link from http(s)://(www.)transpose.com/t -->
-        <intent-filter>
+        <intent-filter android:autoVerify="true">
           <action android:name="android.intent.action.VIEW" />
           <category android:name="android.intent.category.DEFAULT" />
           <category android:name="android.intent.category.BROWSABLE" />
