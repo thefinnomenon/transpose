@@ -98,6 +98,16 @@ const App = (props: any) => {
       return;
     }
 
+    // Share Extension Deep Link transpose://https://open.spotify.com/...
+    if (
+      url.includes('transpose') &&
+      (url.includes('spotify') || url.includes('apple'))
+    ) {
+      const link = url.replace('transpose://', '');
+      transpose(link);
+      return;
+    }
+
     if (url.includes('transpose')) {
       resolveTranspose(url);
     } else {
