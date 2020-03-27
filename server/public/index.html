@@ -1,0 +1,19 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>My Website Home Page</title>
+    <script>
+      const id = window.location.href.replace(
+        'https://2c2312ab.ngrok.io/index.html?id=',
+        '',
+      );
+      window.location.replace(`transpose://${id}`);
+      setTimeout(() => {
+        window.location.replace('https://itunes.apple.com/app/id12345678');
+      }, 2000);
+    </script>
+  </head>
+  <body>
+    <h1>Welcome to my website</h1>
+    <p>Now hosted on Amazon S3!</p>
+  </body>
+</html>

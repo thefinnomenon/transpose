@@ -4,7 +4,7 @@ Debug.enable('*');
 const debug = Debug('transpose-main');
 import Axios from 'axios';
 import Share from 'react-native-share';
-import ShareExtension from './ShareExtension';
+//import ShareExtension from './ShareExtension';
 
 import {
   StatusBar,
@@ -25,7 +25,7 @@ import Header from './src/components/Header';
 import ElementDisplay from './src/components/ElementDisplay';
 import ProviderButton from './src/components/ProviderButton';
 
-const baseURL = 'http://2c2312ab.ngrok.io';
+const baseURL = 'https://2c2312ab.ngrok.io';
 
 export type ElementType = 'track' | 'artist' | 'album';
 
@@ -119,9 +119,9 @@ const App = (props: any) => {
   // Check if launched via share
   useEffect(() => {
     debug('App Launched with props: ', props);
-    ShareExtension.data().then((data: { value: string; type: string }) => {
-      debug('Share Extension Data: %o', data);
-    });
+    // ShareExtension.data().then((data: { value: string; type: string }) => {
+    //   debug('Share Extension Data: %o', data);
+    // });
     if (props.url) {
       transpose(props.url);
     }
@@ -142,7 +142,12 @@ const App = (props: any) => {
 
   const resolveTranspose = (link: string) => {
     debug('Resolving Transpose Link: %o', link);
-    const res = link.match(/https?:\/\/transpose.com\/t\/(.*)/);
+    // Check if Universal link
+    let res = link.match(/https?:\/\/transpose.com\/(.*)/);
+    if (!res) {
+      // Check if URL scheme link
+      res = link.match(/transpose:\/\/(.*)/);
+    }
     if (!res) {
       debug('Transpose ID not found');
       return;
@@ -287,7 +292,7 @@ const openShare = (metadata: MetadataType, link: string) => {
   })
     .then(res => {
       debug(res);
-      ShareExtension.close();
+      //ShareExtension.close();
     })
     .catch(err => {
       debug(err);

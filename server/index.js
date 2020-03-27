@@ -13,7 +13,9 @@ const agent = new https.Agent({
 
 const DEBUG = process.env.NODE_ENV === 'development';
 
-const TRANSPOSE_LINK_BASE = 'https://transpose.com';
+const TRANSPOSE_LINK_BASE = !DEBUG
+  ? 'https://transpose.com'
+  : 'https://2c2312ab.ngrok.io';
 const port = 3000;
 
 // ID GENERATION
@@ -102,7 +104,7 @@ app.get(
     debug('Put Transpose record in DB');
 
     // Construct Transpose link and add to result
-    const transposeLink = `${TRANSPOSE_LINK_BASE}/t/${transposeID}`;
+    const transposeLink = `${TRANSPOSE_LINK_BASE}/${transposeID}`;
     formattedResults.links.transpose = transposeLink;
 
     debug('Transpose Complete: %o', transposeLink);
@@ -138,6 +140,11 @@ app.get(
     res.send(record.Item.content);
   }),
 );
+
+app.get('/l/:id', (req, res) => {
+  const id = req.params.id;
+  return res.redirect(`../index.html?id=${id}`);
+});
 
 //////  QUERY DB FOR LINK RECORD
 //  Queries for @linkId record
@@ -271,4 +278,5 @@ function asyncWrapper(callback) {
   };
 }
 
+app.use('/', express.static('public'));
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
