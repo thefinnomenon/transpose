@@ -22,10 +22,73 @@ import {
   ElementType,
 } from './src/utlities';
 import Header from './src/components/Header';
-import Main from './src/components/Main';
+import Results from './src/components/Results';
 import LinkInput from './src/components/LinkInput';
+import SplashScreen from './src/components/SplashScreen';
+
+const App = (props: any) => {
+  const [url, setURL] = useState<string | null>(null);
+  const [method, setMethod] = useState('');
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [hasTimeHasPassed, setTimeHasPassed] = useState(false);
+
+  // Set Timer to ensure minimum time SplashScreen is shown
+  useEffect(() => {
+    setTimeout(() => setTimeHasPassed(true), 3000);
+  }, []);
+
+  // Check if launched via Android share and handle
+  useEffect(() => {
+    debug('App Launched with props: ', props);
+    if (props.url) {
+      setURL(props.url);
+      setMethod('Share');
+    }
+  }, [props.url]);
+
+  // Check if launched via deep link
+  // Note:
+  //  includes iOS shares since I had to use a workaround
+  //  of launching the app via a deep link from the share sheet
+  useEffect(() => {
+    Linking.getInitialURL()
+      .then(url => {
+        debug('Initial URL: %o', url);
+        if (url) {
+          setURL(url);
+          setMethod('Link');
+        }
+        setIsInitialized(true);
+      })
+      .catch(error => debug('Get Initial URL Error: %O', error));
+
+    const handleLinkingEvent = ({ url }: { url: string }) => {
+      debug('Linking Event: %o', url);
+      setURL(url);
+      setMethod('Link');
+    };
+
+    Linking.addEventListener('url', handleLinkingEvent);
+    return () => {
+      Linking.removeEventListener('url', handleLinkingEvent);
+    };
+  }, []);
+
+  const isDone = isInitialized && hasTimeHasPassed;
+
+  return (
+    <>
+      <StatusBar barStyle="dark-content" />
+      <SafeAreaView style={styles.safeArea}>
+        {!isDone && <SplashScreen />}
+        {isDone && <Main url={url} method={method ? method : 'Input'} />}
+      </SafeAreaView>
+    </>
+  );
+};
 
 enum State {
+  INITIALIZING,
   WAITING,
   LOADING,
   DONE,
@@ -46,52 +109,31 @@ const initState = {
 };
 
 type Props = {
-  url: string;
+  url: string | null;
+  method: string;
 };
 
-const App = (props: any) => {
+const Main = (props: Props) => {
+  const { method } = props;
   const [inputText, setInputText] = useState(initState.inputText);
-  const [state, setState] = useState(initState.state);
-  const [method, setMethod] = useState(initState.method);
+  const [state, setState] = useState(props.url ? State.LOADING : State.WAITING);
   const [metadata, setMetadata] = useState<MetadataType>(initState.metadata);
   const [links, setLinks] = useState<{ [key: string]: string }>(
     initState.links,
   );
 
-  // Check if launched via deep link and register deep link listener
-  // Note:
-  //  this also includes iOS shares since I had to use a workaround
-  //  of launching the app via a deep link from the share sheet
+  // Check if url in props is valid and handle
   useEffect(() => {
-    Linking.getInitialURL()
-      .then(url => {
-        debug('Initial URL: %o', url);
-        handleLink(url, 'DEEPLINK');
-      })
-      .catch(error => debug('Get Initial URL Error: %O', error));
-
-    const handleLinkingEvent = ({ url }: { url: string }) => {
-      debug('Linking Event: %o', url);
-      handleLink(url, 'DEEPLINK');
-    };
-
-    Linking.addEventListener('url', handleLinkingEvent);
-    return () => {
-      Linking.removeEventListener('url', handleLinkingEvent);
-    };
-  }, []);
-
-  // Check if launched via Android share and handle
-  useEffect(() => {
-    debug('App Launched with props: ', props);
+    debug('Main props: ', props);
     if (props.url) {
-      setMethod('Share');
-      handleLink(props.url, 'Share');
+      handleLink(props.url);
+    } else {
+      setState(State.WAITING);
     }
   }, [props.url]);
 
   // Check if link and if so handle it accordingly
-  const handleLink = async (link: string | null, source: string) => {
+  const handleLink = async (link: string | null) => {
     if (!link) {
       return;
     }
@@ -99,13 +141,13 @@ const App = (props: any) => {
     let element;
     switch (linkInfo?.provider) {
       case 'transpose':
-        debug('Resolving link from %o\n %o', source, link);
+        debug('Resolving link from %o\n %o', method, link);
         setState(State.LOADING);
         element = await resolveTranspose(linkInfo.id);
         break;
       case 'spotify':
       case 'apple':
-        debug('Transposing link from %o\n %o', source, link);
+        debug('Transposing link from %o\n %o', method, link);
         setState(State.LOADING);
         element = await transpose({ ...linkInfo });
         break;
@@ -144,37 +186,34 @@ const App = (props: any) => {
   // On text change, update input text & check if valid link
   const handleOnChangeText = (text: string) => {
     setInputText(text);
-    setMethod('LinkInput');
-    handleLink(text, 'LinkInput');
+    handleLink(text, 'Input');
   };
 
   return (
     <>
-      <StatusBar barStyle="dark-content" />
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.container}>
-          {state !== State.LOADING && (
+      <View style={styles.container}>
+        {state === State.INITIALIZING && <SplashScreen />}
+        {state === State.WAITING && (
+          <LinkInput
+            inputText={inputText}
+            handleOnChangeText={handleOnChangeText}
+          />
+        )}
+        {state === State.LOADING && (
+          <ActivityIndicator size="large" color="#101010" />
+        )}
+        {state === State.DONE && (
+          <>
             <Header
-              showBackButton={state === State.DONE && method === 'LinkInput'}
+              showBackButton={state === State.DONE && method === 'Input'}
               showCloseButton={state === State.DONE && method === 'Share'}
               onBackPress={handleBackPress}
               onClosePress={handleClosePress}
             />
-          )}
-          <View style={styles.topContent}>
-            {state === State.DONE && <Main metadata={metadata} links={links} />}
-            {state === State.WAITING && (
-              <LinkInput
-                inputText={inputText}
-                handleOnChangeText={handleOnChangeText}
-              />
-            )}
-            {state === State.LOADING && (
-              <ActivityIndicator size="large" color="#101010" />
-            )}
-          </View>
-        </View>
-      </SafeAreaView>
+            <Results metadata={metadata} links={links} />
+          </>
+        )}
+      </View>
     </>
   );
 };
@@ -187,17 +226,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  topContent: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  buttons: {
-    flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    width: '80%',
   },
 });
 

@@ -15,7 +15,7 @@ const DEBUG = process.env.NODE_ENV === 'development';
 
 const TRANSPOSE_LINK_BASE = !DEBUG
   ? 'https://transpose.com'
-  : 'https://b09ef133.ngrok.io';
+  : 'https://ac39ac71.ngrok.io';
 const port = 3000;
 
 // ID GENERATION

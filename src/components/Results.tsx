@@ -1,8 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { MetadataType } from 'App';
 import ElementDisplay from './ElementDisplay';
-import { openLink, openShare } from '../../src/utlities';
+import { openLink, openShare, MetadataType } from '../utlities';
 import Button from './Button';
 
 type Props = {
@@ -12,7 +11,7 @@ type Props = {
 
 const defaultProps = Object.freeze({});
 
-export const Main = ({ metadata, links }: Props) => (
+export const Results = ({ metadata, links }: Props) => (
   <View style={styles.container}>
     <View style={styles.topContent}>
       <ElementDisplay metadata={metadata} />
@@ -56,6 +55,6 @@ const styles = StyleSheet.create({
   },
 });
 
-Main.defaultProps = defaultProps;
+Results.defaultProps = defaultProps;
 
-export default Main;
+export default Results;
