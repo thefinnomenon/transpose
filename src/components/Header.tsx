@@ -1,20 +1,21 @@
 import React from 'react';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import Icon2 from 'react-native-vector-icons/Octicons';
 
 type Props = {
   showBackButton: boolean;
+  showCloseButton: boolean;
   onBackPress(): void;
-  onSettingsPress(): void;
+  onClosePress(): void;
 } & typeof defaultProps;
 
 const defaultProps = Object.freeze({});
 
 export const Header = ({
   onBackPress,
-  onSettingsPress,
   showBackButton,
+  onClosePress,
+  showCloseButton,
 }: Props) => (
   <View style={styles.container}>
     {showBackButton && (
@@ -22,11 +23,13 @@ export const Header = ({
         <Icon name="ios-arrow-back" size={40} color="#080808" />
       </TouchableOpacity>
     )}
-    <TouchableOpacity
-      style={styles.settingsButton}
-      onPress={() => onSettingsPress()}>
-      <Icon2 name="settings" size={40} color="#080808" />
-    </TouchableOpacity>
+    {showCloseButton && (
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => onClosePress()}>
+        <Icon name="md-close" size={40} color="#080808" />
+      </TouchableOpacity>
+    )}
   </View>
 );
 
@@ -41,11 +44,6 @@ const styles = StyleSheet.create({
   backButton: {
     width: 40,
     height: 40,
-  },
-  settingsButton: {
-    width: 40,
-    height: 40,
-    marginLeft: 'auto',
   },
 });
 

@@ -15,7 +15,7 @@ const DEBUG = process.env.NODE_ENV === 'development';
 
 const TRANSPOSE_LINK_BASE = !DEBUG
   ? 'https://transpose.com'
-  : 'https://2c2312ab.ngrok.io';
+  : 'https://b09ef133.ngrok.io';
 const port = 3000;
 
 // ID GENERATION
@@ -103,7 +103,7 @@ app.get(
     debug('Put Transpose record in DB');
 
     // Construct Transpose link and add to result
-    const transposeLink = `${TRANSPOSE_LINK_BASE}/${transposeID}`;
+    const transposeLink = `${TRANSPOSE_LINK_BASE}/l/${transposeID}`;
     transposeResults.links.transpose = transposeLink;
 
     debug('Transpose Complete: %o', transposeLink);

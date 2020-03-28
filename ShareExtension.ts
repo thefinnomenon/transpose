@@ -5,5 +5,11 @@
  * close(): Closes share Activity
  *
  */
-import { NativeModules } from 'react-native';
-export default NativeModules.ShareExtension;
+import { NativeModules, Platform } from 'react-native';
+
+let ShareExtension = { close: () => {} };
+if (Platform.OS === 'android') {
+  ShareExtension = NativeModules.ShareExtension;
+}
+
+export default ShareExtension;
