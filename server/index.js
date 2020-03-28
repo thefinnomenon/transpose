@@ -87,6 +87,9 @@ app.get(
       const processResults = await processLink(provider, type, id);
       transposeResults = processResults.transposeResults;
       query = processResults.query;
+      // Format results
+      transposeResults = formatResults(transposeResults);
+      debug('Formatted Results: %O', transposeResults);
     }
 
     debug('Processing complete. Creating record.');
@@ -95,21 +98,17 @@ app.get(
     const transposeID = nanoid(NANOID_LENGTH);
     debug('Generated ID: %o', transposeID);
 
-    // Format results
-    const formattedResults = formatResults(transposeResults);
-    debug('Formatted Results: %O', formattedResults);
-
     // Add record to DB
-    await putTransposeRecord(transposeID, linkID, query, formattedResults);
+    await putTransposeRecord(transposeID, linkID, query, transposeResults);
     debug('Put Transpose record in DB');
 
     // Construct Transpose link and add to result
     const transposeLink = `${TRANSPOSE_LINK_BASE}/${transposeID}`;
-    formattedResults.links.transpose = transposeLink;
+    transposeResults.links.transpose = transposeLink;
 
     debug('Transpose Complete: %o', transposeLink);
 
-    res.send(formattedResults);
+    res.send(transposeResults);
   }),
 );
 
