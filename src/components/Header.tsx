@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Image } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 type Props = {
@@ -9,7 +9,12 @@ type Props = {
   onClosePress(): void;
 } & typeof defaultProps;
 
-const defaultProps = Object.freeze({});
+const defaultProps = Object.freeze({
+  showBackButton: false,
+  showCloseButton: false,
+  onBackPress: () => {},
+  onClosePress: () => {},
+});
 
 export const Header = ({
   onBackPress,
@@ -30,20 +35,33 @@ export const Header = ({
         <Icon name="md-close" size={40} color="#080808" />
       </TouchableOpacity>
     )}
+    <Image
+      style={styles.logo}
+      source={require('../../resources/logo_small.png')}
+    />
+    <View style={styles.backButton} />
   </View>
 );
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 10,
-    marginBottom: 10,
+    marginBottom: 30,
+    height: 60,
     width: '90%',
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   backButton: {
-    width: 40,
+    position: 'absolute',
+    left: 4,
+    width: 60,
     height: 40,
+  },
+  logo: {
+    height: 60,
+    width: 50,
+    resizeMode: 'stretch',
   },
 });
 

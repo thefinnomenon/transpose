@@ -20,6 +20,8 @@ import {
   MetadataType,
   Element,
   ElementType,
+  SPOTIFY_URL,
+  APPLE_URL,
 } from './src/utlities';
 import Header from './src/components/Header';
 import Results from './src/components/Results';
@@ -29,6 +31,9 @@ import SplashScreen from './src/components/SplashScreen';
 const App = (props: any) => {
   const [url, setURL] = useState<string | null>(null);
   const [method, setMethod] = useState('');
+  const [installedProviders, setInstalledProviders] = useState<{
+    [key: string]: boolean;
+  }>({});
   const [isInitialized, setIsInitialized] = useState(false);
   const [hasTimeHasPassed, setTimeHasPassed] = useState(false);
 
@@ -74,14 +79,32 @@ const App = (props: any) => {
     };
   }, []);
 
-  const isDone = isInitialized && hasTimeHasPassed;
+  // Check which providers are installed
+  useEffect(() => {
+    debug('Checking Installed Providers');
+    async function checkInstalledProviders() {
+      const spotify = await Linking.canOpenURL(SPOTIFY_URL);
+      const apple = await Linking.canOpenURL(APPLE_URL);
+      setInstalledProviders({ spotify, apple });
+      debug('Installed Providers: %O', { spotify, apple });
+    }
+    checkInstalledProviders();
+  }, []);
+
+  const isDone = isInitialized && hasTimeHasPassed && installedProviders;
 
   return (
     <>
       <StatusBar barStyle="dark-content" />
       <SafeAreaView style={styles.safeArea}>
         {!isDone && <SplashScreen />}
-        {isDone && <Main url={url} method={method ? method : 'Input'} />}
+        {isDone && (
+          <Main
+            url={url}
+            method={method ? method : 'Input'}
+            installedProviders={installedProviders}
+          />
+        )}
       </SafeAreaView>
     </>
   );
@@ -111,10 +134,11 @@ const initState = {
 type Props = {
   url: string | null;
   method: string;
+  installedProviders: { [key: string]: boolean };
 };
 
 const Main = (props: Props) => {
-  const { method } = props;
+  const { method, installedProviders } = props;
   const [inputText, setInputText] = useState(initState.inputText);
   const [state, setState] = useState(props.url ? State.LOADING : State.WAITING);
   const [metadata, setMetadata] = useState<MetadataType>(initState.metadata);
@@ -210,7 +234,11 @@ const Main = (props: Props) => {
               onBackPress={handleBackPress}
               onClosePress={handleClosePress}
             />
-            <Results metadata={metadata} links={links} />
+            <Results
+              metadata={metadata}
+              links={links}
+              installedProviders={installedProviders}
+            />
           </>
         )}
       </View>

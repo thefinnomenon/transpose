@@ -1,30 +1,24 @@
 import React from 'react';
-import { Platform, StyleSheet, TouchableOpacity, Text } from 'react-native';
-import Icon from 'react-native-vector-icons/EvilIcons';
+import { StyleSheet, TouchableOpacity } from 'react-native';
 
 type Props = {
-  title: string;
+  icon: JSX.Element;
   handlePress(): void;
 } & typeof defaultProps;
 
 const defaultProps = Object.freeze({});
 
-export const Button = ({ title, handlePress }: Props) => (
+export const Button = ({ icon, handlePress }: Props) => (
   <TouchableOpacity style={styles.button} onPress={() => handlePress()}>
-    <Icon
-      name={Platform.OS === 'ios' ? 'share-apple' : 'share-google'}
-      size={40}
-      color="#fff"
-    />
-    <Text>{title}</Text>
+    {icon}
   </TouchableOpacity>
 );
 
 const styles = StyleSheet.create({
   button: {
     flex: 1,
-    borderRightWidth: 3,
-    borderColor: 'white',
+    margin: 4,
+    padding: 10,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#808080',
@@ -35,13 +29,8 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.4,
     shadowRadius: 5,
-    elevation: 2,
+    elevation: 5,
     borderRadius: 10,
-  },
-  title: {
-    textAlign: 'center',
-    color: '#fff',
-    fontSize: 24,
   },
 });
 

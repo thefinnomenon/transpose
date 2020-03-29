@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, TextInput } from 'react-native';
+import { StyleSheet, View, Image, TextInput } from 'react-native';
 
 type Props = {
   inputText: string;
@@ -9,16 +9,38 @@ type Props = {
 const defaultProps = Object.freeze({});
 
 export const LinkInput = ({ inputText, handleOnChangeText }: Props) => (
-  <TextInput
-    style={styles.linkInput}
-    placeholder="Paste link here to be Transposed!"
-    placeholderTextColor="#808080"
-    onChangeText={text => handleOnChangeText(text)}
-    value={inputText}
-  />
+  <View style={styles.container}>
+    <View style={styles.spacer} />
+    <View style={styles.logoContainer}>
+      <Image
+        style={styles.logo}
+        source={require('../../resources/logo_small.png')}
+      />
+    </View>
+    <View style={styles.spacer} />
+    <View style={styles.linkInputContainer}>
+      <TextInput
+        style={styles.linkInput}
+        placeholder="Paste link here to be Transposed!"
+        placeholderTextColor="#808080"
+        onChangeText={text => handleOnChangeText(text)}
+        value={inputText}
+      />
+    </View>
+    <View style={styles.spacer} />
+    <View style={styles.spacer} />
+  </View>
 );
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  linkInputContainer: {
+    flex: 2,
+  },
   linkInput: {
     height: 40,
     width: 300, //'80%',
@@ -26,6 +48,17 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     textAlign: 'center',
     color: '#101010',
+  },
+  logoContainer: {
+    flex: 2,
+  },
+  logo: {
+    height: 160,
+    width: 150,
+    resizeMode: 'stretch',
+  },
+  spacer: {
+    flex: 1,
   },
 });
 

@@ -70,6 +70,8 @@
 		<string>EvilIcons.ttf</string>
 		<string>Octicons.ttf</string>
 		<string>Ionicons.ttf</string>
+		<string>SimpleLineIcons.ttf</string>
+		<string>AntDesign.ttf</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>

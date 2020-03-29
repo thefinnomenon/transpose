@@ -8,6 +8,11 @@ const debug = Debug('transpose-utilities');
 
 const baseURL = 'https://ac39ac71.ngrok.io';
 
+export const SPOTIFY_URL =
+  'https://open.spotify.com/track/2TpZlmChocrfeL5J6ed70t';
+export const APPLE_URL =
+  'https://music.apple.com/us/artist/jon-bellion/659289673';
+
 export const axios = Axios.create({
   baseURL,
 });

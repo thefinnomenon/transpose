@@ -194,7 +194,8 @@ dependencies {
 // react-native-vector-icons
 // https://github.com/oblador/react-native-vector-icons
 project.ext.vectoricons = [
-    iconFontNames: [ 'EvilIcons.ttf', 'Octicons.ttf', 'Ionicons.ttf' ]
+    iconFontNames: [ 'EvilIcons.ttf', 'Octicons.ttf', 'Ionicons.ttf', 'SimpleLineIcons.ttf',
+		'AntDesign.ttf' ]
 ]
 
 apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
