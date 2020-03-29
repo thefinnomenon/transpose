@@ -3,6 +3,7 @@ import Debug from 'debug';
 Debug.enable('*');
 const debug = Debug('transpose-main');
 import ShareExtension from './ShareExtension';
+import LottieView from 'lottie-react-native';
 import {
   StatusBar,
   SafeAreaView,
@@ -27,6 +28,7 @@ import Header from './src/components/Header';
 import Results from './src/components/Results';
 import LinkInput from './src/components/LinkInput';
 import SplashScreen from './src/components/SplashScreen';
+import normalize from './src/utlities/responsive';
 
 const App = (props: any) => {
   const [url, setURL] = useState<string | null>(null);
@@ -221,7 +223,6 @@ const Main = (props: Props) => {
   return (
     <>
       <View style={styles.container}>
-        {state === State.INITIALIZING && <SplashScreen />}
         {state === State.WAITING && (
           <LinkInput
             inputText={inputText}
@@ -229,7 +230,12 @@ const Main = (props: Props) => {
           />
         )}
         {state === State.LOADING && (
-          <ActivityIndicator size="large" color="#101010" />
+          <LottieView
+            style={styles.loader}
+            source={require('./resources/loader.json')}
+            autoPlay
+            loop
+          />
         )}
         {state === State.DONE && (
           <>
@@ -259,6 +265,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  loader: {
+    width: normalize(100),
   },
 });
 
