@@ -83,10 +83,15 @@ const App = (props: any) => {
   useEffect(() => {
     debug('Checking Installed Providers');
     async function checkInstalledProviders() {
-      const spotify = await Linking.canOpenURL(SPOTIFY_URL);
-      const apple = await Linking.canOpenURL(APPLE_URL);
-      setInstalledProviders({ spotify, apple });
-      debug('Installed Providers: %O', { spotify, apple });
+      const providers: { [key: string]: boolean } = {};
+      try {
+        providers.spotify = await Linking.canOpenURL('spotify://');
+      } catch (e) {}
+      try {
+        providers.apple = await Linking.canOpenURL('music://');
+      } catch (e) {}
+      setInstalledProviders(providers);
+      debug('Installed Providers: %O', providers);
     }
     checkInstalledProviders();
   }, []);

@@ -17,8 +17,8 @@ type Props = {
 const defaultProps = Object.freeze({});
 
 export const Results = ({ metadata, links, installedProviders }: Props) => {
-  const spotify = links.spotify && installedProviders.spotify;
-  const apple = links.apple && installedProviders.apple;
+  const spotify = links.spotify; //&& installedProviders.spotify;
+  const apple = links.apple; //&& installedProviders.apple;
   return (
     <View style={styles.container}>
       <View style={styles.topContent}>
