@@ -1,7 +1,8 @@
 import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import ElementImage from './ElementImage';
-import { MetadataType } from '../../App';
+import { MetadataType } from '../utlities';
+import normalize from '../utlities/responsive';
 
 type Props = {
   metadata: MetadataType;
@@ -43,14 +44,14 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#080808',
-    fontSize: 24,
-    marginTop: 20,
-    marginBottom: 6,
+    fontSize: normalize(24),
+    marginTop: normalize(10),
+    marginBottom: normalize(2),
   },
   subtitle: {
     color: '#282828',
     fontWeight: '300',
-    fontSize: 20,
+    fontSize: normalize(20),
   },
 });
 

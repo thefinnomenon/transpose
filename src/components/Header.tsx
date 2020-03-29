@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, TouchableOpacity, Image } from 'react-native';
+import normalize from '../utlities/responsive';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 type Props = {
@@ -25,14 +26,14 @@ export const Header = ({
   <View style={styles.container}>
     {showBackButton && (
       <TouchableOpacity style={styles.backButton} onPress={() => onBackPress()}>
-        <Icon name="ios-arrow-back" size={40} color="#080808" />
+        <Icon name="ios-arrow-back" size={normalize(40)} color="#080808" />
       </TouchableOpacity>
     )}
     {showCloseButton && (
       <TouchableOpacity
         style={styles.backButton}
         onPress={() => onClosePress()}>
-        <Icon name="md-close" size={40} color="#080808" />
+        <Icon name="md-close" size={normalize(40)} color="#080808" />
       </TouchableOpacity>
     )}
     <Image
@@ -45,23 +46,20 @@ export const Header = ({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 30,
-    height: 60,
-    width: '90%',
+    marginTop: normalize(8),
+    width: '100%',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
   },
   backButton: {
     position: 'absolute',
-    left: 4,
-    width: 60,
-    height: 40,
+    left: normalize(20),
   },
   logo: {
-    height: 60,
-    width: 50,
-    resizeMode: 'stretch',
+    height: normalize(40),
+    width: normalize(89),
+    resizeMode: 'contain',
   },
 });
 

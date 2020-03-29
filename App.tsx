@@ -215,7 +215,7 @@ const Main = (props: Props) => {
   // On text change, update input text & check if valid link
   const handleOnChangeText = (text: string) => {
     setInputText(text);
-    handleLink(text, 'Input');
+    handleLink(text);
   };
 
   return (

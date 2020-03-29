@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, Image, TextInput } from 'react-native';
+import normalize from '../utlities/responsive';
 
 type Props = {
   inputText: string;
@@ -10,52 +11,45 @@ const defaultProps = Object.freeze({});
 
 export const LinkInput = ({ inputText, handleOnChangeText }: Props) => (
   <View style={styles.container}>
-    <View style={styles.spacer} />
-    <View style={styles.logoContainer}>
-      <Image
-        style={styles.logo}
-        source={require('../../resources/logo_small.png')}
-      />
-    </View>
-    <View style={styles.spacer} />
-    <View style={styles.linkInputContainer}>
+    <Image
+      style={styles.logo}
+      source={require('../../resources/logo_large.png')}
+    />
+    <View style={styles.inputContainer}>
       <TextInput
-        style={styles.linkInput}
-        placeholder="Paste link here to be Transposed!"
+        style={styles.input}
+        placeholder="Paste link here to be Transposed"
         placeholderTextColor="#808080"
         onChangeText={text => handleOnChangeText(text)}
         value={inputText}
       />
     </View>
-    <View style={styles.spacer} />
-    <View style={styles.spacer} />
   </View>
 );
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  linkInputContainer: {
-    flex: 2,
+  inputContainer: {
+    flex: 1,
   },
-  linkInput: {
-    height: 40,
-    width: 300, //'80%',
+  input: {
+    height: normalize(50, 50),
+    width: normalize(300),
     borderBottomColor: 'black',
-    borderBottomWidth: 1,
+    borderBottomWidth: normalize(1, 1),
+    fontSize: normalize(18),
     textAlign: 'center',
     color: '#101010',
   },
-  logoContainer: {
-    flex: 2,
-  },
+  //664 × 273
   logo: {
-    height: 160,
-    width: 150,
-    resizeMode: 'stretch',
+    flex: 1,
+    width: normalize(200),
+    resizeMode: 'contain',
   },
   spacer: {
     flex: 1,

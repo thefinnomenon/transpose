@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
+import normalize from '../utlities/responsive';
 
 type Props = {
   icon: JSX.Element;
@@ -17,7 +18,7 @@ export const Button = ({ icon, handlePress }: Props) => (
 const styles = StyleSheet.create({
   button: {
     flex: 1,
-    margin: 4,
+    margin: normalize(4),
     padding: 10,
     justifyContent: 'center',
     alignItems: 'center',

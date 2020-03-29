@@ -32,11 +32,13 @@ const styles = StyleSheet.create({
   },
   squareImage: {
     width: '80%',
+    maxHeight: 600,
     aspectRatio: 1,
     borderRadius: 10,
   },
   circleImage: {
     width: '80%',
+    maxHeight: 600,
     aspectRatio: 1,
     borderRadius: Math.round(Dimensions.get('window').width / 2),
   },
