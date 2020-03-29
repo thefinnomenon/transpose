@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 import normalize from '../utlities/responsive';
+import LinearGradient from 'react-native-linear-gradient';
 
 type Props = {
   icon: JSX.Element;
@@ -11,7 +12,9 @@ const defaultProps = Object.freeze({});
 
 export const Button = ({ icon, handlePress }: Props) => (
   <TouchableOpacity style={styles.button} onPress={() => handlePress()}>
-    {icon}
+    <LinearGradient style={styles.gradient} colors={['#D550FF', '#7402FF']}>
+      {icon}
+    </LinearGradient>
   </TouchableOpacity>
 );
 
@@ -19,9 +22,7 @@ const styles = StyleSheet.create({
   button: {
     flex: 1,
     margin: normalize(4),
-    padding: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
+
     backgroundColor: '#808080',
     shadowColor: '#000',
     shadowOffset: {
@@ -31,6 +32,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 5,
     elevation: 5,
+    borderRadius: 10,
+  },
+  gradient: {
+    padding: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
     borderRadius: 10,
   },
 });
