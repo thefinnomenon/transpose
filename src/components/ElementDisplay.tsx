@@ -44,8 +44,8 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#080808',
-    fontSize: normalize(24),
-    marginTop: normalize(10),
+    fontSize: normalize(28),
+    marginTop: normalize(16),
     marginBottom: normalize(2),
   },
   subtitle: {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Debug from 'debug';
 Debug.enable('*');
 const debug = Debug('transpose-main');
@@ -10,19 +10,15 @@ import {
   StyleSheet,
   View,
   Image,
-  ActivityIndicator,
   Linking,
+  Animated,
 } from 'react-native';
 import {
   checkLinkAndExtractInfo,
-  openShare,
   transpose,
   resolveTranspose,
   MetadataType,
-  Element,
   ElementType,
-  SPOTIFY_URL,
-  APPLE_URL,
 } from './src/utlities';
 import Header from './src/components/Header';
 import Results from './src/components/Results';
@@ -31,11 +27,12 @@ import SplashScreen from './src/components/SplashScreen';
 import normalize from './src/utlities/responsive';
 
 const App = (props: any) => {
+  const [state, setState] = useState(State.INITIALIZING);
   const [url, setURL] = useState<string | null>(null);
   const [method, setMethod] = useState('');
   const [installedProviders, setInstalledProviders] = useState<{
     [key: string]: boolean;
-  }>({});
+  }>();
   const [isInitialized, setIsInitialized] = useState(false);
   const [hasTimeHasPassed, setTimeHasPassed] = useState(false);
 
@@ -100,17 +97,43 @@ const App = (props: any) => {
 
   const isDone = isInitialized && hasTimeHasPassed && installedProviders;
 
+  // Handle fade out & in
+  const splashOpacity = useRef(new Animated.Value(1)).current;
+  const mainOpacity = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    if (isDone) {
+      Animated.timing(splashOpacity, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => {
+        setState(State.DONE);
+        Animated.timing(mainOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }).start();
+      });
+    }
+  }, [isDone]);
+
   return (
     <>
       <StatusBar barStyle="dark-content" />
       <SafeAreaView style={styles.safeArea}>
-        {!isDone && <SplashScreen />}
-        {isDone && (
-          <Main
-            url={url}
-            method={method ? method : 'Input'}
-            installedProviders={installedProviders}
-          />
+        {state === State.INITIALIZING && (
+          <Animated.View style={{ flex: 1, opacity: splashOpacity }}>
+            <SplashScreen />
+          </Animated.View>
+        )}
+        {state === State.DONE && (
+          <Animated.View style={{ flex: 1, opacity: mainOpacity }}>
+            <Main
+              url={url}
+              method={method ? method : 'Input'}
+              installedProviders={{}}
+            />
+          </Animated.View>
         )}
       </SafeAreaView>
     </>
@@ -220,25 +243,60 @@ const Main = (props: Props) => {
     handleLink(text);
   };
 
+  // Handle fade out & in
+  const linkInputOpacity = useRef(new Animated.Value(1)).current;
+  const loaderOpacity = useRef(new Animated.Value(0)).current;
+  const resultsOpacity = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    switch (state) {
+      case State.WAITING:
+        Animated.timing(linkInputOpacity, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }).start();
+        break;
+      case State.LOADING:
+        Animated.timing(loaderOpacity, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }).start();
+        break;
+      case State.DONE:
+        Animated.timing(resultsOpacity, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }).start();
+        linkInputOpacity.setValue(0);
+    }
+  }, [state]);
+
   return (
     <>
       <View style={styles.container}>
         {state === State.WAITING && (
-          <LinkInput
-            inputText={inputText}
-            handleOnChangeText={handleOnChangeText}
-          />
+          <Animated.View style={{ flex: 1, opacity: linkInputOpacity }}>
+            <LinkInput
+              inputText={inputText}
+              handleOnChangeText={handleOnChangeText}
+            />
+          </Animated.View>
         )}
         {state === State.LOADING && (
-          <LottieView
-            style={styles.loader}
-            source={require('./resources/loader.json')}
-            autoPlay
-            loop
-          />
+          <Animated.View style={{ opacity: loaderOpacity }}>
+            <LottieView
+              style={styles.loader}
+              source={require('./resources/loader.json')}
+              autoPlay
+              loop
+            />
+          </Animated.View>
         )}
         {state === State.DONE && (
-          <>
+          <Animated.View
+            style={{ width: '100%', height: '100%', opacity: resultsOpacity }}>
             <Header
               showBackButton={state === State.DONE && method === 'Input'}
               showCloseButton={state === State.DONE && method === 'Share'}
@@ -250,7 +308,7 @@ const Main = (props: Props) => {
               links={links}
               installedProviders={installedProviders}
             />
-          </>
+          </Animated.View>
         )}
       </View>
     </>
