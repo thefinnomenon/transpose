@@ -1,13 +1,24 @@
 service: transpose-serverless
 
 custom:
+  stage: ${env:NODE_ENV, 'dev'}
   dotenv:
     exclude:
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
       - AWS_REGION
+  apiCloudFront:
+    domain: api.transposeapp.com
+    certificate: arn:aws:acm:us-east-1:177450493151:certificate/05f96424-d3f1-46ae-b77a-52af7846a842
+    logging:
+      bucket: transposeapp.s3.amazonaws.com
+      prefix: cf-logs
+    cookies: none
+    headers: none
+    querystring: none
   bundle:
     sourcemaps: true
+    linting: false
     copyFiles:
       - from: 'MusicKitKey.p8'
         to: './'
@@ -15,7 +26,7 @@ custom:
 provider:
   name: aws
   runtime: nodejs12.x
-  stage: ${self:custom.stage, 'dev'}
+  stage: ${self:custom.stage}
   region: ${env:AWS_REGION}
   iamRoleStatements:
     - Effect: Allow
@@ -67,6 +78,7 @@ resources:
 
 plugins:
   - serverless-dotenv-plugin
+  - serverless-api-cloudfront
   - serverless-bundle
   - serverless-dynamodb-local
   - serverless-offline
