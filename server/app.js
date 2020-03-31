@@ -1,5 +1,10 @@
 require('dotenv').config();
 const debug = require('debug')('transpose-app');
+const Sentry = require('@sentry/node');
+Sentry.init({
+  dsn: 'https://6b73ef7e94ec4946a1aa2fb75a880487@sentry.io/5183036',
+  // release: `${process.env.APP_NAME}@${process.env.APP_VERSION}`,
+});
 const DynamoDB = require('aws-sdk/clients/dynamodb');
 const nanoid = require('nanoid');
 const express = require('express');
@@ -12,6 +17,11 @@ const agent = new https.Agent({
 });
 
 const DEBUG = process.env.NODE_ENV === 'development';
+debug(
+  `${process.env.npm_package_name}@${process.env.npm_package_version} (${process.env.NODE_ENV})`,
+);
+// The request handler must be the first middleware on the app
+app.use(Sentry.Handlers.requestHandler());
 
 const TRANSPOSE_LINK_BASE = process.env.URL_BASE;
 
@@ -26,8 +36,6 @@ var dynamoDB = new DynamoDB.DocumentClient({
   convertEmptyValues: true,
   apiVersion: '2012-08-10',
 });
-
-console.log(dynamoDB);
 
 // if (process.env.AWS_ACCESS_KEY_ID) {
 //   dynamoDB = new DynamoDB.DocumentClient({
@@ -57,6 +65,10 @@ const providers = {
 
 app.get('/hello', function(req, res) {
   res.send('Hello World!');
+});
+
+app.get('/debug-sentry', function mainHandler(req, res) {
+  throw new Error('My first Sentry error!');
 });
 
 //////  REFRESH PROVIDER TOKEN
@@ -296,5 +308,16 @@ function asyncWrapper(callback) {
 }
 
 app.use('/', express.static('public'));
+
+// The error handler must be before any other error middleware and after all controllers
+app.use(Sentry.Handlers.errorHandler());
+
+// Optional fallthrough error handler
+app.use(function onError(err, req, res, next) {
+  // The error id is attached to `res.sentry` to be returned
+  // and optionally displayed to the user for support.
+  res.statusCode = 500;
+  res.end(res.sentry + '\n');
+});
 
 export default app;

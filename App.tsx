@@ -2,6 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import Debug from 'debug';
 Debug.enable('*');
 const debug = Debug('transpose-main');
+const { name: APP_NAME, version: APP_VERSION } = require('./package.json');
+import * as Sentry from '@sentry/react-native';
+Sentry.init({
+  dsn: 'https://0dce81deaa69439db31d5b7ed0e40653@sentry.io/5183048',
+  release: `${APP_NAME}@${APP_VERSION}`,
+});
 import ShareExtension from './ShareExtension';
 import LottieView from 'lottie-react-native';
 import {
@@ -25,6 +31,11 @@ import Results from './src/components/Results';
 import LinkInput from './src/components/LinkInput';
 import SplashScreen from './src/components/SplashScreen';
 import normalize from './src/utlities/responsive';
+
+debug(
+  // @ts-ignore
+  `${APP_NAME}@${APP_VERSION} (${process.env.NODE_ENV})`,
+);
 
 const App = (props: any) => {
   const [state, setState] = useState(State.INITIALIZING);

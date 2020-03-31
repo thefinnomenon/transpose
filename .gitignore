@@ -66,3 +66,6 @@ buck-out/
 # Server Secrets
 server/.env
 server/MusicKitKey.p8
+
+# Serverless
+server/.serverless/
