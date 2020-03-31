@@ -13,10 +13,7 @@ const agent = new https.Agent({
 
 const DEBUG = process.env.NODE_ENV === 'development';
 
-const TRANSPOSE_LINK_BASE = !DEBUG
-  ? 'https://transpose.com'
-  : 'https://ac39ac71.ngrok.io';
-const port = 3000;
+const TRANSPOSE_LINK_BASE = process.env.URL_BASE;
 
 // ID GENERATION
 const NANOID_LENGTH = 10;
@@ -26,16 +23,29 @@ var dynamoDB = new DynamoDB.DocumentClient({
   httpOptions: {
     agent,
   },
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  },
   convertEmptyValues: true,
-  region: process.env.AWS_REGION,
   apiVersion: '2012-08-10',
-  //logger: DEBUG ? console : null,
 });
-const TABLENAME = 'transpose';
+
+console.log(dynamoDB);
+
+// if (process.env.AWS_ACCESS_KEY_ID) {
+//   dynamoDB = new DynamoDB.DocumentClient({
+//   httpOptions: {
+//     agent,
+//   },
+//   credentials: {
+//     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+//     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+//   },
+//   convertEmptyValues: true,
+//   region: process.env.AWS_REGION,
+//   apiVersion: '2012-08-10',
+//   //logger: DEBUG ? console : null,
+// });
+// }
+
+const TABLENAME = process.env.TRANSPOSE_TABLE;
 
 import Spotify from './providers/spotify';
 import Apple from './providers/apple';
@@ -45,11 +55,16 @@ const providers = {
   apple: new Apple(),
 };
 
+app.get('/hello', function(req, res) {
+  res.send('Hello World!');
+});
+
 //////  REFRESH PROVIDER TOKEN
 //  Generates & sets a new access token good for the given provider.
+//  POST https://transpose.com/refresh/:provider
 //////
-app.get(
-  '/:provider/refresh',
+app.post(
+  '/refresh/:provider',
   asyncWrapper(async (req, res) => {
     await providers[req.params.provider].refreshToken();
     res.sendStatus(200);
@@ -203,9 +218,12 @@ const getTransposeRecord = transposeID => {
 //////
 const processLink = (provider, type, id) => {
   return new Promise(async resolve => {
-    if (DEBUG) {
-      await Promise.all(Object.values(providers).map(p => p.refreshToken()));
-    }
+    //if (DEBUG) {
+    // For now just refresh token on every call until I figure out
+    // how to refresh them on a schedule and have make them available
+    // to the lambda function
+    await Promise.all(Object.values(providers).map(p => p.refreshToken()));
+    //}
 
     const element = await providers[provider].getElement(type, id);
     const convertedLinks = await Promise.all(
@@ -278,4 +296,5 @@ function asyncWrapper(callback) {
 }
 
 app.use('/', express.static('public'));
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+
+export default app;

@@ -1,0 +1,71 @@
+service: transpose-serverless
+
+custom:
+  dotenv:
+    exclude:
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_REGION
+  bundle:
+    copyFiles:
+      - from: 'MusicKitKey.p8'
+        to: './'
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: ${self:custom.stage, 'dev'}
+  region: ${env:AWS_REGION}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource:
+        - { 'Fn::GetAtt': ['TransposeDynamoDBTable', 'Arn'] }
+        - Fn::Join:
+            - '/'
+            - - { 'Fn::GetAtt': ['TransposeDynamoDBTable', 'Arn'] }
+              - 'index/*'
+  environment:
+    TRANSPOSE_TABLE: ${env:TRANSPOSE_TABLE}
+
+functions:
+  server:
+    handler: sls.handler
+    events:
+      - http: ANY /
+      - http: 'ANY {proxy+}'
+
+resources:
+  Resources:
+    TransposeDynamoDBTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        TableName: ${env:TRANSPOSE_TABLE}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: linkID
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        GlobalSecondaryIndexes:
+          - IndexName: link-index
+            KeySchema:
+              - AttributeName: linkID
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+
+plugins:
+  - serverless-dotenv-plugin
+  - serverless-bundle
+  - serverless-dynamodb-local
+  - serverless-offline
