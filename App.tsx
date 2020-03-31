@@ -3,11 +3,8 @@ import Debug from 'debug';
 Debug.enable('*');
 const debug = Debug('transpose-main');
 const { name: APP_NAME, version: APP_VERSION } = require('./package.json');
+import codePush from 'react-native-code-push';
 import * as Sentry from '@sentry/react-native';
-Sentry.init({
-  dsn: 'https://0dce81deaa69439db31d5b7ed0e40653@sentry.io/5183048',
-  release: `${APP_NAME}@${APP_VERSION}`,
-});
 import ShareExtension from './ShareExtension';
 import LottieView from 'lottie-react-native';
 import {
@@ -36,6 +33,21 @@ debug(
   // @ts-ignore
   `${APP_NAME}@${APP_VERSION} (${process.env.NODE_ENV})`,
 );
+
+Sentry.init({
+  dsn: 'https://0dce81deaa69439db31d5b7ed0e40653@sentry.io/5183048',
+  release: `${APP_NAME}@${APP_VERSION}`,
+});
+
+codePush.getUpdateMetadata().then(update => {
+  if (update) {
+    debug(
+      'CodePush Update: %o',
+      `${update.appVersion}-codepush:${update.label}`,
+    );
+    Sentry.setRelease(update.appVersion + '-codepush:' + update.label);
+  }
+});
 
 const App = (props: any) => {
   const [state, setState] = useState(State.INITIALIZING);
