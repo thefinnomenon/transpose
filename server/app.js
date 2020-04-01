@@ -130,7 +130,7 @@ app.get(
     debug('Put Transpose record in DB');
 
     // Construct Transpose link and add to result
-    const transposeLink = `${TRANSPOSE_LINK_BASE}/l/${transposeID}`;
+    const transposeLink = `${TRANSPOSE_LINK_BASE}/t/${transposeID}`;
     transposeResults.links.transpose = transposeLink;
 
     debug('Transpose Complete: %o', transposeLink);
