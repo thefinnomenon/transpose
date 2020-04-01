@@ -61,7 +61,7 @@ const App = (props: any) => {
 
   // Set Timer to ensure minimum time SplashScreen is shown
   useEffect(() => {
-    setTimeout(() => setTimeHasPassed(true), 3000);
+    setTimeout(() => setTimeHasPassed(true), 1000);
   }, []);
 
   // Check if launched via Android share and handle
