@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dimensions, StyleSheet, View, Image } from 'react-native';
+import { Platform, Dimensions, StyleSheet, View, Image } from 'react-native';
 
 type Props = {
   type: string;
@@ -9,7 +9,7 @@ type Props = {
 const defaultProps = Object.freeze({});
 
 export const ElementImage = ({ type, uri }: Props) => (
-  <View style={styles.shadow}>
+  <View style={Platform.OS === 'ios' ? styles.shadow : null}>
     <Image
       style={type === 'artist' ? styles.circleImage : styles.squareImage}
       source={{ uri }}
@@ -18,6 +18,9 @@ export const ElementImage = ({ type, uri }: Props) => (
   </View>
 );
 
+// Drop shadows w/ borderRadius don't work on Android
+// so we will only use them for iOS for now...
+// https://github.com/facebook/react-native/issues/26544
 const styles = StyleSheet.create({
   shadow: {
     shadowColor: '#000',
@@ -28,7 +31,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.7,
     shadowRadius: 10,
     borderRadius: Math.round(Dimensions.get('window').width / 2),
-    elevation: 5,
+    backgroundColor: 'transparent',
+    elevation: 7,
   },
   squareImage: {
     width: '80%',

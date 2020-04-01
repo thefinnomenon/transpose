@@ -46,7 +46,7 @@ export const Header = ({
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: normalize(8),
+    marginTop: normalize(20),
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'center',
