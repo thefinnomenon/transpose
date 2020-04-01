@@ -6,7 +6,7 @@ import Axios from 'axios';
 Debug.enable('*');
 const debug = Debug('transpose-utilities');
 
-const baseURL = 'https://ac39ac71.ngrok.io';
+const baseURL = 'https://api.transposeapp.com';
 
 export const SPOTIFY_URL =
   'https://open.spotify.com/track/2TpZlmChocrfeL5J6ed70t';
@@ -66,17 +66,33 @@ export const checkLinkAndExtractInfo = (link: string) => {
     return;
   }
 
+  debug('Matches: %O', matches);
+
   // transpose://{id}
   if (matches[1] === 'transpose') {
     return { provider: 'transpose', type: 'transpose', id: matches[2] };
   }
 
-  const provider = matches[2].match(/\.(\w+)\./);
+  debug('Link: %o', link);
+
+  let provider;
+  if (link.includes('transposeapp.com')) {
+    provider = 'transpose';
+  }
+
+  if (link.includes('spotify')) {
+    provider = 'spotify';
+  }
+
+  if (link.includes('apple')) {
+    provider = 'apple';
+  }
+
   if (!provider) {
     return;
   }
 
-  switch (provider[1]) {
+  switch (provider) {
     case 'transpose':
       return parseTransposeLink(link);
     case 'spotify':
@@ -94,7 +110,7 @@ export const checkLinkAndExtractInfo = (link: string) => {
 //  https://transposeapp.com/l/{id}
 //////
 export const parseTransposeLink = (link: string) => {
-  const id = link.replace('https://transposeapp.com/l', '');
+  const id = link.replace('https://transposeapp.com/t/', '');
 
   const linkInfo = {
     provider: 'transpose',
