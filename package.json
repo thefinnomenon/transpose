@@ -4,6 +4,11 @@
   "private": true,
   "scripts": {
     "android": "react-native run-android",
+    "android:clean": "cd android && ./gradlew clean && cd ..",
+    "android:build": "cd android && ./gradlew assembleRelease && cd ..",
+    "android:build:staging": "cd android && ./gradlew assembleReleaseStaging && cd ..",
+    "android:bundle": "cd android && ./gradlew bundleRelease && cd ..",
+    "android:bundle:staging": "cd android && ./gradlew bundleReleaseStaging && cd ..",
     "ios": "react-native run-ios",
     "ios:device": "react-native run-ios --device",
     "start": "react-native start",

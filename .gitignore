@@ -63,6 +63,9 @@ buck-out/
 # CocoaPods
 /ios/Pods/
 
+# Android Keystore Properties
+keystore.properties
+
 # Server Secrets
 server/.env
 server/MusicKitKey.p8

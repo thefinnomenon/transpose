@@ -160,9 +160,7 @@ export const parseAppleLink = (link: string) => {
 //////
 export const parseSpotifyLink = (link: string) => {
   // 1-type, 2-id
-  const match = link.match(
-    /https:\/\/open.spotify.com\/(?<type>\w+)\/(?<id>\w+)/,
-  );
+  const match = link.match(/https:\/\/open.spotify.com\/(\w+)\/(\w+)/);
 
   if (!match) {
     return;
