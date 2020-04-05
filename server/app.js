@@ -37,22 +37,6 @@ var dynamoDB = new DynamoDB.DocumentClient({
   apiVersion: '2012-08-10',
 });
 
-// if (process.env.AWS_ACCESS_KEY_ID) {
-//   dynamoDB = new DynamoDB.DocumentClient({
-//   httpOptions: {
-//     agent,
-//   },
-//   credentials: {
-//     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-//     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-//   },
-//   convertEmptyValues: true,
-//   region: process.env.AWS_REGION,
-//   apiVersion: '2012-08-10',
-//   //logger: DEBUG ? console : null,
-// });
-// }
-
 const TABLENAME = process.env.TRANSPOSE_TABLE;
 
 import Spotify from './providers/spotify';
@@ -63,13 +47,11 @@ const providers = {
   apple: new Apple(),
 };
 
-app.get('/hello', function(req, res) {
-  res.send('Hello World!');
-});
-
-app.get('/debug-sentry', function mainHandler(req, res) {
-  throw new Error('My first Sentry error!');
-});
+const types = {
+  track: 'track',
+  artist: 'artist',
+  album: 'album',
+};
 
 //////  REFRESH PROVIDER TOKEN
 //  Generates & sets a new access token good for the given provider.
@@ -96,6 +78,13 @@ app.get(
     }
 
     const { provider, type, id } = req.params;
+    if (!(provider in providers)) {
+      res.sendStatus(400);
+    }
+    if (!(type in types)) {
+      res.sendStatus(400);
+    }
+
     const linkID = `${provider}:${type}:${id}`;
     let transposeResults = {};
     let query = '';
@@ -167,7 +156,7 @@ app.get(
   }),
 );
 
-app.get('/l/:id', (req, res) => {
+app.get('/t/:id', (req, res) => {
   const id = req.params.id;
   return res.redirect(`../index.html?id=${id}`);
 });
@@ -208,7 +197,11 @@ const putTransposeRecord = (transposeID, linkID, query, transposeResults) => {
         content: transposeResults,
       },
     })
-    .promise();
+    .promise()
+    .catch(error => {
+      debug('Put Error: %O', error);
+      throw new Error(error);
+    });
 };
 
 //////  GET TRANSPOSE RECORD FROM DB
@@ -222,39 +215,45 @@ const getTransposeRecord = transposeID => {
         id: transposeID,
       },
     })
-    .promise();
+    .promise()
+    .catch(error => {
+      debug('Get Error: %O', error);
+      throw new Error(error);
+    });
 };
 
 //////  PROCESS LINK
 //  Get info for element and then search other providers
 //////
-const processLink = (provider, type, id) => {
-  return new Promise(async resolve => {
-    //if (DEBUG) {
-    // For now just refresh token on every call until I figure out
-    // how to refresh them on a schedule and have make them available
-    // to the lambda function
-    await Promise.all(Object.values(providers).map(p => p.refreshToken()));
-    //}
+const processLink = async (provider, type, id) => {
+  //if (DEBUG) {
+  // For now just refresh token on every call until I figure out
+  // how to refresh them on a schedule and have make them available
+  // to the lambda function
+  await Promise.all(Object.values(providers).map(p => p.refreshToken()));
+  //}
 
-    const element = await providers[provider].getElement(type, id);
-    const convertedLinks = await Promise.all(
-      Object.values(providers).map(p => p.search(type, element)),
-    );
+  const element = await providers[provider].getElement(type, id);
+  const convertedLinks = await Promise.all(
+    Object.values(providers).map(p => p.search(type, element)),
+  );
 
-    // Need to generate the query for storing in the DB
-    const query = Object.values(element)
-      .map(val => val)
-      .join(' ');
+  if (Object.keys(convertedLinks).length < 2) {
+    throw new Error('Item not found in any other provider.');
+  }
 
-    const transposeResults = {};
-    convertedLinks.map(convertedLink => {
-      transposeResults[convertedLink.provider] = convertedLink;
-    });
+  // Need to generate the query for storing in the DB
+  const query = Object.values(element)
+    .map(val => val)
+    .join(' ');
 
-    debug('Transpose Results: %O', transposeResults);
-    resolve({ query, transposeResults });
+  const transposeResults = {};
+  convertedLinks.map(convertedLink => {
+    transposeResults[convertedLink.provider] = convertedLink;
   });
+
+  debug('Transpose Results: %O', transposeResults);
+  return { query, transposeResults };
 };
 
 //////  FORMAT RESULTS
