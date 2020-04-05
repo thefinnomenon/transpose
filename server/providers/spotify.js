@@ -40,19 +40,6 @@ export default class Spotify {
       });
   }
 
-  ////// EXTRACT ELEMENT INFO
-  //  Parses @link to extract element type and id.
-  //  https://api.spotify.com/v1/{type}/{id}
-  //////
-  extractElementInfo(link) {
-    const {
-      groups: { type, id },
-    } = link.match(/https:\/\/open.spotify.com\/(?<type>\w+)\/(?<id>\w+)/);
-
-    debug('Element Info: type: %o, id: %o', type, id);
-    return { type, id };
-  }
-
   //////  GET ELEMENT
   //  Get element of @type with @id and parse the response
   //  https://api.spotify.com/v1/{type}/{id}

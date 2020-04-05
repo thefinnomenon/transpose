@@ -72,3 +72,6 @@ server/MusicKitKey.p8
 
 # Serverless
 server/.serverless/
+
+# Server Coverage
+server/coverage/
