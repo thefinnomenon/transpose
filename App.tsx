@@ -11,6 +11,7 @@ import {
   StatusBar,
   SafeAreaView,
   StyleSheet,
+  Alert,
   View,
   Image,
   Linking,
@@ -221,22 +222,32 @@ const Main = (props: Props) => {
         debug('Resolving link from %o\n %o', method, link);
         setState(State.LOADING);
         element = await resolveTranspose(linkInfo.id);
+        if (!element) {
+          debug('Transposing Failed.');
+          setInputText(initState.inputText);
+          setState(State.WAITING);
+          handleResolveError();
+          return;
+        }
         break;
       case 'spotify':
       case 'apple':
         debug('Transposing link from %o\n %o', method, link);
         setState(State.LOADING);
         element = await transpose({ ...linkInfo });
+        if (!element) {
+          debug('Resolve Failed.');
+          setInputText(initState.inputText);
+          setState(State.WAITING);
+          handleTransposeError();
+          return;
+        }
         break;
       default:
         debug('Unsupported Provider');
+        setInputText(initState.inputText);
+        handleUnsupportedError();
         return;
-    }
-
-    if (!element) {
-      debug('Transposing or Resolving Failed.');
-      setState(State.WAITING);
-      return;
     }
 
     debug('Successfully retrieved element: %O', element);
@@ -265,6 +276,36 @@ const Main = (props: Props) => {
     setInputText(text);
     handleLink(text);
   };
+
+  const handleTransposeError = () => {
+    Alert.alert(
+      'Transpose Failure',
+      'Unable to transpose link.\nThis usually happens when trying to share a specific version or remix of a song that might be labeled differently or not available on other providers.',
+      [
+        {text: 'OK', onPress: () => {}},
+      ]
+    );
+  }
+
+  const handleResolveError = () => {
+    Alert.alert(
+      'Resolve Failure',
+      'Unable to resolve link.',
+      [
+        {text: 'OK', onPress: () => {}},
+      ]
+    );
+  }
+
+  const handleUnsupportedError = () => {
+    Alert.alert(
+      'Unsupported Provider',
+      'We currently do not support links from that provider. Send us an email requesting it be added!',
+      [
+        {text: 'OK', onPress: () => {}},
+      ]
+    );
+  }
 
   // Handle fade out & in
   const linkInputOpacity = useRef(new Animated.Value(1)).current;
