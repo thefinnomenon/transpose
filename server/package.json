@@ -6,6 +6,7 @@
   "scripts": {
     "start": "nodemon -r esm server.js",
     "start:dev": "NODE_ENV=development DEBUG=transpose-* nodemon -r esm server.js",
+    "deploy": "sls deploy --aws-profile serverless-transpose-service",
     "test": "jest --collectCoverage"
   },
   "author": "",

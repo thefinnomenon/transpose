@@ -1,0 +1,47 @@
+service: transpose-serverless-refreshTokens
+
+custom:
+  stage: ${env:NODE_ENV, 'dev'}
+  dotenv:
+    exclude:
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_REGION
+  bundle:
+    sourcemaps: true
+    linting: false
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: ${self:custom.stage}
+  region: us-east-1
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - ssm:GetParameters
+        - ssm:GetParameter
+      Resource: 'arn:aws:ssm:us-east-1:177450493151:parameter/Transpose/Spotify/*'
+    # - Effect: Allow
+    #   Action:
+    #     - ssm:GetParameters
+    #     - ssm:GetParameter
+    #   Resource: 'arn:aws:ssm:us-east-1:177450493151:parameter/Transpose/Apple/*'
+    - Effect: 'Allow'
+      Action:
+        - 'secretsmanager:PutSecretValue'
+        - 'secretsmanager:GetSecretValue'
+      Resource: 'arn:aws:secretsmanager:us-east-1:177450493151:secret:Transpose/Spotify_Bearer_Token-GjTqsq'
+
+functions:
+  refreshSpotifyToken:
+    handler: handler.refreshSpotifyToken
+    # events:
+    #   - schedule: rate(30 minutes)
+    environment:
+      SPOTIFY_CLIENT_ID: ${ssm:/Transpose/Spotify/SPOTIFY_CLIENT_ID~true}
+      SPOTIFY_CLIENT_SECRET: ${ssm:/Transpose/Spotify/SPOTIFY_CLIENT_SECRET~true}
+
+plugins:
+  - serverless-bundle
+  - serverless-offline

@@ -19,9 +19,6 @@ custom:
   bundle:
     sourcemaps: true
     linting: false
-    copyFiles:
-      - from: 'MusicKitKey.p8'
-        to: './'
 
 provider:
   name: aws
@@ -29,6 +26,10 @@ provider:
   stage: ${self:custom.stage}
   region: ${env:AWS_REGION}
   iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - cloudfront:GetDistribution
+      Resource: 'arn:aws:cloudfront::177450493151:distribution/E1Z7IXN5953Y9S'
     - Effect: Allow
       Action:
         - dynamodb:Query
@@ -43,6 +44,10 @@ provider:
             - '/'
             - - { 'Fn::GetAtt': ['TransposeDynamoDBTable', 'Arn'] }
               - 'index/*'
+    - Effect: 'Allow'
+      Action:
+        - 'secretsmanager:GetSecretValue'
+      Resource: 'arn:aws:secretsmanager:us-east-1:177450493151:secret:Transpose/*'
   environment:
     TRANSPOSE_TABLE: ${env:TRANSPOSE_TABLE}
 
