@@ -40,6 +40,22 @@ export default class Spotify {
       });
   }
 
+  getToken(secretManager) {
+    debug('Get token!');
+    return secretManager
+      .getSecretValue({ SecretId: 'Transpose/Spotify_Bearer_Token' })
+      .promise()
+      .then(data => {
+        this.token = data.SecretString;
+        debug('Retrieved token from Secret Manager: %o', data.SecretString);
+        return 'OK';
+      })
+      .catch(e => {
+        debug('Failed to retrieve token from Secret Manager: %o', e);
+        throw e;
+      });
+  }
+
   //////  GET ELEMENT
   //  Get element of @type with @id and parse the response
   //  https://api.spotify.com/v1/{type}/{id}

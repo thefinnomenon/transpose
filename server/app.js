@@ -6,6 +6,7 @@ Sentry.init({
   // release: `${process.env.APP_NAME}@${process.env.APP_VERSION}`,
 });
 const DynamoDB = require('aws-sdk/clients/dynamodb');
+const SecretsManager = require('aws-sdk/clients/secretsmanager');
 const nanoid = require('nanoid');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -17,8 +18,10 @@ const agent = new https.Agent({
 });
 
 const DEBUG = process.env.NODE_ENV === 'development';
-debug(
-  `${process.env.npm_package_name}@${process.env.npm_package_version} (${process.env.NODE_ENV})`,
+console.log(
+  `${process.env.npm_package_name}@${process.env.npm_package_version} (${
+    process.env.NODE_ENV
+  })`,
 );
 // The request handler must be the first middleware on the app
 app.use(Sentry.Handlers.requestHandler());
@@ -38,6 +41,11 @@ var dynamoDB = new DynamoDB.DocumentClient({
 });
 
 const TABLENAME = process.env.TRANSPOSE_TABLE;
+
+// Secrets Manager
+var secretMgr = new SecretsManager({
+  region: 'us-east-1',
+});
 
 import Spotify from './providers/spotify';
 import Apple from './providers/apple';
@@ -226,12 +234,11 @@ const getTransposeRecord = transposeID => {
 //  Get info for element and then search other providers
 //////
 const processLink = async (provider, type, id) => {
-  //if (DEBUG) {
-  // For now just refresh token on every call until I figure out
-  // how to refresh them on a schedule and have make them available
-  // to the lambda function
-  await Promise.all(Object.values(providers).map(p => p.refreshToken()));
-  //}
+  if (DEBUG) {
+    await Promise.all(Object.values(providers).map(p => p.refreshToken()));
+  } else {
+    await Promise.all(Object.values(providers).map(p => p.getToken(secretMgr)));
+  }
 
   const element = await providers[provider].getElement(type, id);
   const convertedLinks = await Promise.all(

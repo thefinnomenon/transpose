@@ -19,7 +19,6 @@ export default class Apple {
   //////
   refreshToken() {
     const privateKey = fs.readFileSync('MusicKitKey.p8');
-
     const token = jwt.sign({}, privateKey, {
       algorithm: 'ES256',
       expiresIn: '1h',
@@ -27,9 +26,23 @@ export default class Apple {
       keyid: this.keyID,
     });
 
-    // TODO: Test that the token is valid?
     debug('Token Refresh Success: %o', token);
     this.token = token;
+  }
+
+  getToken(secretManager) {
+    return secretManager
+      .getSecretValue({ SecretId: 'Transpose/Apple_Music_Token' })
+      .promise()
+      .then(data => {
+        this.token = data.SecretString;
+        debug('Retrieved token from Secret Manager: %o', data.SecretString);
+        return 'OK';
+      })
+      .catch(e => {
+        debug('Failed to retrieve token from Secret Manager: %o', e);
+        throw e;
+      });
   }
 
   ////// EXTRACT ELEMENT INFO
