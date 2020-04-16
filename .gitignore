@@ -75,3 +75,7 @@ server/.serverless/
 
 # Server Coverage
 server/coverage/
+
+# react-native-ultimate-config
+rnuc.xcconfig
+rnuc.properties

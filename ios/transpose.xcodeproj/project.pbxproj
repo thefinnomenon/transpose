@@ -49,6 +49,11 @@
 		B61959D6242E9BAC00332E6A /* libRNShare.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B61959D5242E9BAC00332E6A /* libRNShare.a */; };
 		B61959D8242E9BAC00332E6A /* libRNVectorIcons.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B61959D7242E9BAC00332E6A /* libRNVectorIcons.a */; };
 		B61959DA242E9BAC00332E6A /* libYoga.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B61959D9242E9BAC00332E6A /* libYoga.a */; };
+		B671F9592448F6FA007293BA /* rnuc.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = B671F9582448F6FA007293BA /* rnuc.xcconfig */; };
+		B671F95A2448F6FA007293BA /* rnuc.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = B671F9582448F6FA007293BA /* rnuc.xcconfig */; };
+		B671F95B2448F6FA007293BA /* rnuc.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = B671F9582448F6FA007293BA /* rnuc.xcconfig */; };
+		B671F95C2448F6FA007293BA /* rnuc.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = B671F9582448F6FA007293BA /* rnuc.xcconfig */; };
+		B671F95D2448F6FA007293BA /* rnuc.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = B671F9582448F6FA007293BA /* rnuc.xcconfig */; };
 		B6A6856024314ED500495637 /* default.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6A6855F24314ED500495637 /* default.swift */; };
 		B6A6856124314ED500495637 /* default.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6A6855F24314ED500495637 /* default.swift */; };
 		B6D0DE4724355107003516AC /* libBase64.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B6D0DE2424355107003516AC /* libBase64.a */; };
@@ -186,6 +191,7 @@
 		B61959D5242E9BAC00332E6A /* libRNShare.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libRNShare.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		B61959D7242E9BAC00332E6A /* libRNVectorIcons.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libRNVectorIcons.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		B61959D9242E9BAC00332E6A /* libYoga.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libYoga.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		B671F9582448F6FA007293BA /* rnuc.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = rnuc.xcconfig; sourceTree = "<group>"; };
 		B6A6855E24314ED400495637 /* transpose-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "transpose-Bridging-Header.h"; sourceTree = "<group>"; };
 		B6A6855F24314ED500495637 /* default.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = default.swift; sourceTree = "<group>"; };
 		B6D0A6F8242E609400E14D8A /* transpose.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = transpose.entitlements; path = transpose/transpose.entitlements; sourceTree = "<group>"; };
@@ -359,6 +365,7 @@
 		13B07FAE1A68108700A75B9A /* transpose */ = {
 			isa = PBXGroup;
 			children = (
+				B671F9582448F6FA007293BA /* rnuc.xcconfig */,
 				B6D0A6F8242E609400E14D8A /* transpose.entitlements */,
 				008F07F21AC5B25A0029DE68 /* main.jsbundle */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
@@ -680,6 +687,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B671F95A2448F6FA007293BA /* rnuc.xcconfig in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -688,6 +696,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				B671F9592448F6FA007293BA /* rnuc.xcconfig in Resources */,
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -696,6 +705,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B671F95B2448F6FA007293BA /* rnuc.xcconfig in Resources */,
 				2D02E4BD1E0B4A84006451C7 /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -704,6 +714,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B671F95C2448F6FA007293BA /* rnuc.xcconfig in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -711,6 +722,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B671F95D2448F6FA007293BA /* rnuc.xcconfig in Resources */,
 				B61959A2242E9B1F00332E6A /* MainInterface.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1311,6 +1323,7 @@
 		};
 		83CBBA201A601CBA00E9B192 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = B671F9582448F6FA007293BA /* rnuc.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				BUNDLE_ID_SUFFIX = .dev;
@@ -1366,6 +1379,7 @@
 		};
 		83CBBA211A601CBA00E9B192 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = B671F9582448F6FA007293BA /* rnuc.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				BUNDLE_ID_SUFFIX = "";
@@ -1414,6 +1428,7 @@
 		};
 		B611DACF2433A2E800867CD8 /* Staging */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = B671F9582448F6FA007293BA /* rnuc.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				BUNDLE_ID_SUFFIX = .staging;

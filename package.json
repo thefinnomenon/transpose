@@ -29,6 +29,7 @@
     "react-native-code-push": "^6.2.0",
     "react-native-linear-gradient": "^2.5.6",
     "react-native-share": "^3.1.1",
+    "react-native-ultimate-config": "^1.2.5",
     "react-native-vector-icons": "^6.6.0"
   },
   "devDependencies": {

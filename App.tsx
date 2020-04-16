@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import Config from 'react-native-ultimate-config';
 import Debug from 'debug';
 Debug.enable('*');
 const debug = Debug('transpose-main');
@@ -32,12 +33,12 @@ import normalize from './src/utlities/responsive';
 
 debug(
   // @ts-ignore
-  `${APP_NAME}@${APP_VERSION} (${process.env.NODE_ENV})`,
+  `${APP_NAME}@${APP_VERSION} (${Config.STAGE})`,
 );
 
 Sentry.init({
   dsn: 'https://0dce81deaa69439db31d5b7ed0e40653@sentry.io/5183048',
-  release: `${APP_NAME}@${APP_VERSION}`,
+  release: `${APP_NAME}@${APP_VERSION}-${Config.STAGE}`,
 });
 
 codePush.getUpdateMetadata().then(update => {
@@ -46,7 +47,7 @@ codePush.getUpdateMetadata().then(update => {
       'CodePush Update: %o',
       `${update.appVersion}-codepush:${update.label}`,
     );
-    Sentry.setRelease(update.appVersion + '-codepush:' + update.label);
+    Sentry.setRelease(`${APP_NAME}@${update.appVersion}-${Config.STAGE}`);
   }
 });
 
