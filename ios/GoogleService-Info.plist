@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>780910834474-sbff1br0reo1rjr13pboqsps3b28u4d2.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.780910834474-sbff1br0reo1rjr13pboqsps3b28u4d2</string>
+	<key>API_KEY</key>
+	<string>AIzaSyAJT87l6G9nfs4KPEz-0bzd6EJtZueYHwQ</string>
+	<key>GCM_SENDER_ID</key>
+	<string>780910834474</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.thefinnternet.transpose</string>
+	<key>PROJECT_ID</key>
+	<string>transpose-3b612</string>
+	<key>STORAGE_BUCKET</key>
+	<string>transpose-3b612.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:780910834474:ios:0d07b844b50f4034c1a453</string>
+	<key>DATABASE_URL</key>
+	<string>https://transpose-3b612.firebaseio.com</string>
+</dict>
+</plist>

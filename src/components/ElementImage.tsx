@@ -30,9 +30,6 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.7,
     shadowRadius: 10,
-    borderRadius: Math.round(Dimensions.get('window').width / 2),
-    backgroundColor: 'transparent',
-    elevation: 7,
   },
   squareImage: {
     width: '80%',
@@ -44,7 +41,7 @@ const styles = StyleSheet.create({
     width: '80%',
     maxHeight: 600,
     aspectRatio: 1,
-    borderRadius: Math.round(Dimensions.get('window').width / 2),
+    borderRadius: Math.round((0.8 * Dimensions.get('window').width) / 2),
   },
 });
 

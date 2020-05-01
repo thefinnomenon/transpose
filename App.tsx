@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
+import Config from 'react-native-ultimate-config';
 import Debug from 'debug';
 Debug.enable('*');
 const debug = Debug('transpose-main');
 const { name: APP_NAME, version: APP_VERSION } = require('./package.json');
 import codePush from 'react-native-code-push';
+import admob, { MaxAdContentRating, BannerAd, BannerAdSize, TestIds } from '@react-native-firebase/admob';
 import * as Sentry from '@sentry/react-native';
 import ShareExtension from './ShareExtension';
 import LottieView from 'lottie-react-native';
 import {
+  Platform,
   StatusBar,
   SafeAreaView,
   StyleSheet,
@@ -32,12 +35,12 @@ import normalize from './src/utlities/responsive';
 
 debug(
   // @ts-ignore
-  `${APP_NAME}@${APP_VERSION} (${process.env.NODE_ENV})`,
+  `${APP_NAME}@${APP_VERSION} (${Config.STAGE})`,
 );
 
 Sentry.init({
   dsn: 'https://0dce81deaa69439db31d5b7ed0e40653@sentry.io/5183048',
-  release: `${APP_NAME}@${APP_VERSION}`,
+  release: `${APP_NAME}@${APP_VERSION}-${Config.STAGE}`,
 });
 
 codePush.getUpdateMetadata().then(update => {
@@ -46,9 +49,26 @@ codePush.getUpdateMetadata().then(update => {
       'CodePush Update: %o',
       `${update.appVersion}-codepush:${update.label}`,
     );
-    Sentry.setRelease(update.appVersion + '-codepush:' + update.label);
+    Sentry.setRelease(`${APP_NAME}@${update.appVersion}-${Config.STAGE}`);
   }
 });
+
+const adAppId = Platform.OS === 'ios' ? 'ca-app-pub-3973549280849892/3842526295' : 'ca-app-pub-3973549280849892~6793683769';
+const adUnitId = Config.STAGE !== 'production' ? TestIds.BANNER : adAppId;
+
+admob()
+  .setRequestConfiguration({
+    // Update all future requests suitable for parental guidance
+    maxAdContentRating: MaxAdContentRating.T,
+    // Indicates that you want your content treated as child-directed for purposes of COPPA.
+    tagForChildDirectedTreatment: false,
+    // Indicates that you want the ad request to be handled in a manner suitable for users under the age of consent.
+    tagForUnderAgeOfConsent: false,
+  })
+  .then(() => {
+    debug('Set AdMob Request Configuration.');
+  });
+
 
 const App = (props: any) => {
   const [state, setState] = useState(State.INITIALIZING);
@@ -371,6 +391,13 @@ const Main = (props: Props) => {
               metadata={metadata}
               links={links}
               installedProviders={installedProviders}
+            />
+            <BannerAd 
+              unitId={adUnitId}
+              size={BannerAdSize.FULL_BANNER}
+              requestOptions={{
+                keywords: ['spotify', 'apple music', 'apple', 'music', 'song', 'track', 'artist', 'album', 'playlist', 'band', 'stream']
+              }}
             />
           </Animated.View>
         )}

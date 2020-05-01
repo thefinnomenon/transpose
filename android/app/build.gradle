@@ -1,5 +1,6 @@
 apply plugin: "com.android.application"
 apply plugin: "io.sentry.android.gradle"
+apply plugin: 'com.google.gms.google-services'
 
 import com.android.build.OutputFile
 
@@ -84,6 +85,7 @@ project.ext.react = [
 apply from: "../../node_modules/react-native/react.gradle"
 apply from: "../../node_modules/react-native-code-push/android/codepush.gradle"
 apply from: "../../node_modules/@sentry/react-native/sentry.gradle"
+apply from: "../../node_modules/react-native-ultimate-config/android/rnuc.gradle"
 
 /**
  * Set this to true to create two separate APKs instead of one:
@@ -98,7 +100,7 @@ def enableSeparateBuildPerCPUArchitecture = false
 /**
  * Run Proguard to shrink the Java bytecode in release builds.
  */
-def enableProguardInReleaseBuilds = true
+def enableProguardInReleaseBuilds = false
 
 /**
  * The preferred build flavor of JavaScriptCore.
@@ -150,8 +152,9 @@ android {
         applicationId "com.thefinnternet.transpose"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 3
-        versionName "1.1.0"
+        versionCode 4
+        versionName "1.2.0"
+        multiDexEnabled true
     }
     splits {
         abi {
@@ -221,6 +224,8 @@ android {
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "com.facebook.react:react-native:+"  // From node_modules
+    implementation "com.google.android.gms:play-services-ads:19.1.0"
+    implementation 'com.android.support:multidex:1.0.3'
 
     if (enableHermes) {
         def hermesPath = "../../node_modules/hermes-engine/android/";

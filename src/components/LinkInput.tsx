@@ -98,6 +98,8 @@ const styles = StyleSheet.create({
   },
   version: {
     position: 'absolute',
+    fontSize: normalize(14),
+    color: '#808080',
     bottom: 20,
   },
 });

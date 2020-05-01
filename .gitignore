@@ -45,6 +45,7 @@ buck-out/
 \.buckd/
 *.keystore
 !debug.keystore
+*.hprof
 
 # fastlane
 #
@@ -75,3 +76,7 @@ server/.serverless/
 
 # Server Coverage
 server/coverage/
+
+# react-native-ultimate-config
+rnuc.xcconfig
+rnuc.properties
