@@ -368,7 +368,10 @@
 		13B07FAE1A68108700A75B9A /* transpose */ = {
 			isa = PBXGroup;
 			children = (
+<<<<<<< HEAD
 				B6051CE0244F83380088057C /* GoogleService-Info.plist */,
+=======
+>>>>>>> 905c2b070cb4c01a403c2af6229d8700bbe3678a
 				B671F9582448F6FA007293BA /* rnuc.xcconfig */,
 				B6D0A6F8242E609400E14D8A /* transpose.entitlements */,
 				008F07F21AC5B25A0029DE68 /* main.jsbundle */,
@@ -694,7 +697,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				B671F95A2448F6FA007293BA /* rnuc.xcconfig in Resources */,
+<<<<<<< HEAD
 				B6051CE2244F83380088057C /* GoogleService-Info.plist in Resources */,
+=======
+>>>>>>> 905c2b070cb4c01a403c2af6229d8700bbe3678a
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -703,7 +709,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+<<<<<<< HEAD
 				B6051CE1244F83380088057C /* GoogleService-Info.plist in Resources */,
+=======
+>>>>>>> 905c2b070cb4c01a403c2af6229d8700bbe3678a
 				B671F9592448F6FA007293BA /* rnuc.xcconfig in Resources */,
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
 			);
